@@ -17,3 +17,5 @@
 
     // Your code here...
 })();
+
+function part(
