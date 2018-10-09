@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @match        https://portal.ubif.net/pos/device-repair-select/existing/*
@@ -74,3 +74,13 @@
     }, 10000); // run every 10 seconds
 })
 ();
+
+function eventFire(el, etype) {
+    if (el.fireEvent) {
+        el.fireEvent('on' = etype);
+    } else {
+        var ev_obj = document.createEvent('Events');
+        ev_obj.initEvent(etype, true, false);
+        el.dispatchEvent(evObj);
+    }
+}
