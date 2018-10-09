@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @match        https://portal.ubif.net/pos/device-repair-select/existing/*
@@ -53,18 +53,27 @@
                     }
                     var acc_up = acc.toUpperCase();
                     if (acc_up.includes("SIM")) {
+                        eventFire(el_inputs[INPUT_SIM], 'click');
+                        /*
                         el_inputs[INPUT_SIM].checked = true;
                         el_inputs[INPUT_SIM].dispatchEvent(event);
                         el_inputs[INPUT_TRAY].checked = true;
-                        el_inputs[INPUT_TRAY].dispatchEvent(event);
+                        el_inputs[INPUT_TRAY].dispatchEvent(event); */
+                    }
+                    if (acc_up.includes("TRAY")) {
+                        eventFire(el_inputs[INPUT_TRAY], 'click');
                     }
                     if (acc_up.includes("CASE")) {
+                        eventFire(el_inputs[INPUT_CASE], 'click');
+                        /*
                         el_inputs[INPUT_CASE].checked = true;
-                        el_inputs[INPUT_CASE].dispatchEvent(event);
+                        el_inputs[INPUT_CASE].dispatchEvent(event); */
                     }
                     if (acc_up.includes("CHARGE") || acc_up.includes("CORD")) {
+                        eventFire(el_inputs[INPUT_CORD], 'click');
+                        /*
                         el_inputs[INPUT_CORD].checked = true;
-                        el_inputs[INPUT_CORD].dispatchEvent(event);
+                        el_inputs[INPUT_CORD].dispatchEvent(event); */
                     }
                     clearInterval(check_exist);
                 }
@@ -77,10 +86,10 @@
 
 function eventFire(el, etype) {
     if (el.fireEvent) {
-        el.fireEvent('on' = etype);
+        el.fireEvent('on' + etype);
     } else {
         var ev_obj = document.createEvent('Events');
         ev_obj.initEvent(etype, true, false);
-        el.dispatchEvent(evObj);
+        el.dispatchEvent(ev_obj);
     }
 }
