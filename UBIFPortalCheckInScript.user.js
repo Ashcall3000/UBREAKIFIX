@@ -36,13 +36,14 @@
                     // setting values
                     document.getElementsByTagName("input")[3].value = pc; // Settings Passcode field on page
                     document.getElementsByTagName("input")[3].dispatchEvent(event);
-                    text = "PC: " + ((pc == null || pc == "") ? "NA" : pc) +
-                        "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc) +
-                        "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm) + 
-                        "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond) +
-                        "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc) +
-                        (org_text == null) ? "" : ("\n | " + org_text);
+                    text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
+                        + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
+                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm)
+                        + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
+                        + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
+                        + (org_text == null) ? "" : ("\n | " + org_text);
                     if (el_cond != null) {
+                        console.log(text);
                         el_cond.value = text;
                         el_cond.dispatchEvent(event);
                         test = false;
