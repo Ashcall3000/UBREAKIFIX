@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      1.0.4
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @match        https://portal.ubif.net/pos/device-repair-select/existing/*
 // @include      https://portal.ubif.net/pos/device-repair-select/existing/*
 // @include      https://portal.ubif.net/*
-// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/blob/master/UBIFPortalCheckInScript.js
+// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
+// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
 // @run-at document-idle
 // @grant        none
 // ==/UserScript==
@@ -15,6 +16,8 @@
 (function() {
     'use strict';
 
+    // Testing the Update Function
+    var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
     var test = true; // Used to test if page has been loaded previously/already.
     var run = setInterval(function() {
         var check_exist = setInterval(function() {
@@ -31,6 +34,7 @@
                     var text = "";
                     // setting values
                     document.getElementsByTagName("input")[3].value = pc; // Settings Passcode field on page
+                    document.getElementsByTagName("input")[3].dispatchEvent(event);
                     text = "PC: " + ((pc == null || pc == "") ? "NA" : pc) +
                         "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc) +
                         "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm) + 
@@ -39,6 +43,7 @@
                         (org_text == null) ? "" : ("\n | " + org_text);
                     if (el_cond != null) {
                         el_cond.value = text;
+                        el_cond.dispatchEvent(event);
                         test = false;
                     } else {
                         console.log("Not Found");
