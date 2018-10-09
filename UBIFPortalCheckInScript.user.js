@@ -15,9 +15,7 @@
 
 (function() {
     'use strict';
-
-    // Testing the Update Function
-    // Does updating work?
+    
     var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
     var test = true; // Used to test if page has been loaded previously/already.
     var run = setInterval(function() {
@@ -42,16 +40,11 @@
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null) ? "" : ("\n | " + org_text));
                     if (el_cond != null) {
-                        console.log(text);
                         el_cond.value = text;
                         el_cond.dispatchEvent(event);
                         test = false;
-                    } else {
-                        console.log("Not Found");
                     }
                     clearInterval(check_exist);
-                } else {
-                    console.log("NOPE");
                 }
             }
         }, 1000); // check every 1 second
