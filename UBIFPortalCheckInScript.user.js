@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @match        https://portal.ubif.net/pos/device-repair-select/existing/*
@@ -17,6 +17,7 @@
     'use strict';
 
     // Testing the Update Function
+    // Does updating work?
     var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
     var test = true; // Used to test if page has been loaded previously/already.
     var run = setInterval(function() {
