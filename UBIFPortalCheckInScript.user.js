@@ -4,8 +4,6 @@
 // @version      1.1.4
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
-// @match        https://portal.ubif.net/pos/device-repair-select/existing/*
-// @include      https://portal.ubif.net/pos/device-repair-select/existing/*
 // @include      https://portal.ubif.net/*
 // @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
 // @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
