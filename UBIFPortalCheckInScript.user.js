@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.5
+// @version      1.1.0
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @match        https://portal.ubif.net/pos/device-repair-select/existing/*
@@ -16,6 +16,12 @@
 (function() {
     'use strict';
     
+    // Variables for array in input tag name.
+    var INPUT_PASS = 3;
+    var INPUT_CORD = 5;
+    var INPUT_SIM = 6;
+    var INPUT_CASE = 7;
+    var INPUT_TRAY = 8;
     var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
     var test = true; // Used to test if page has been loaded previously/already.
     var run = setInterval(function() {
@@ -29,10 +35,11 @@
                     var cond = prompt("Condition of the device: ", "NA");
                     var desc = prompt("Description of issue with device: ", "NA");
                     var el_cond = document.getElementsByClassName("condition-notes")[0];
+                    var el_inputs = document.getElementsByTagName("input");
                     var org_text = el_cond.value;
                     // setting values
-                    document.getElementsByTagName("input")[3].value = pc; // Settings Passcode field on page
-                    document.getElementsByTagName("input")[3].dispatchEvent(event);
+                    el_inputs[INPUT_PASS].value = pc; // Settings Passcode field on page
+                    el_inputs[INPUT_PASS].dispatchEvent(event);
                     var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
                         + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
                         + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm)
@@ -43,6 +50,21 @@
                         el_cond.value = text;
                         el_cond.dispatchEvent(event);
                         test = false;
+                    }
+                    var acc_up = acc.toUpperCase();
+                    if (acc_up.includes("SIM")) {
+                        el_inputs[INPUT_SIM].checked = true;
+                        el_inputs[INPUT_SIM].dispatchEvent(event);
+                        el_inputs[INPUT_TRAY].checked = true;
+                        el_inputs[INPUT_TRAY].dispatchEvent(event);
+                    }
+                    if (acc_up.includes("CASE")) {
+                        el_inputs[INPUT_CASE].checked = true;
+                        el_inputs[INPUT_CASE].dispatchEvent(event);
+                    }
+                    if (acc_up.includes("CHARGE") || acc_up.includes("CORD")) {
+                        el_inputs[INPUT_CORD].checked = true;
+                        el_inputs[INPUT_CORD].dispatchEvent(event);
                     }
                     clearInterval(check_exist);
                 }
