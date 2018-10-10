@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         New Userscript
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      1.0.1
 // @description  try to take over the world!
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @author       Christopher Sullivan
