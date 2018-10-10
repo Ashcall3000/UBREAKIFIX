@@ -14,6 +14,48 @@
 (function() {
     'use strict';
     
+    var status = document.getElementsByClassName("editor-add-in")[0].value;
+    var text = "";
+    var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
+    var run = setInterval(function() {
+        var new_status = document.getElementsByClassName("editor-add-in")[0].value;
+        if (new_status != status) {
+            switch (new_status) {
+                case 0:
+                    text = '"Device has been repaired and passed tests."';
+                    break;
+                case 1:
+                    text = '"Awaiting callback from the customer."';
+                    break;
+                case 2:
+                    text = '"Awaiting for customer to bring in the device."';
+                    break;
+                case 6:
+                    text = '"Customer has declined the repair and has upto 30 days to pickup there device before it is recycled."';
+                    break;
+                case 7:
+                    text = '"Customer has abandoned the device and is sloted to be recycled."';
+                    break;
+                case 9:
+                    text = '"Need to order a part for the device. Will take 3 to 5 buisness days for shipping."';
+                    break;
+                case 10:
+                    text = '"Device is currently being repaired."';
+                    break;
+                case 11:
+                    text = '"Device is repaired and ready for pickup."';
+                    break;
+                case 12:
+                    text = '"Device was not able to be repaired and is ready for pickup."';
+            }
+            status = new_status;
+            document.getElementsByClassName("note-placeholder")[0].style = "display: none;";
+            document.getElementsByClassName("btn-confirm")[4].disabled = false;
+            var text_area = document.getElementsByClassName("note-editable")[0];
+            text_area.innerHTML = text;
+            text_area.dispatchEvent(event);
+        }
+    }, 1000); // Checks every second.
     /*
     0 Awaiting Approval
     1 Aw Call
