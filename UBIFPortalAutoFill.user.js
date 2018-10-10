@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.1.0
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -13,7 +13,7 @@
 
 (function() {
     'use strict';
-    
+
     var start = setInterval(function() {
         if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/")) {
             var status = document.getElementsByClassName("editor-add-in")[0].value;
@@ -22,61 +22,54 @@
             var run = setInterval(function() {
                 var new_status = document.getElementsByClassName("editor-add-in")[0].value;
                 if (new_status != status) {
-                    switch (new_status) {
-                        case 0:
-                            text = '"Device has been repaired and passed tests."';
-                            break;
-                        case 1:
-                            text = '"Awaiting callback from the customer."';
-                            break;
-                        case 2:
-                            text = '"Awaiting for customer to bring in the device."';
-                            break;
-                        case 6:
-                            text = '"Customer has declined the repair and has upto 30 days to pickup there device before it is recycled."';
-                            break;
-                        case 7:
-                            text = '"Customer has abandoned the device and is sloted to be recycled."';
-                            break;
-                        case 9:
-                            text = '"Need to order a part for the device. Will take 3 to 5 buisness days for shipping."';
-                            break;
-                        case 10:
-                            text = '"Device is currently being repaired."';
-                            break;
-                        case 11:
-                            text = '"Device is repaired and ready for pickup."';
-                            break;
-                        case 12:
-                            text = '"Device was not able to be repaired and is ready for pickup."';
+                    if (new_status == 0) {
+                        setText('Device has been repaired and passed tests.');
+                    } else if (new_status == 1) {
+                        setText('Awaiting callback from the customer.');
+                    } else if (new_status == 2) {
+                        setText('Awaiting for customer to bring in the device.');
+                    } else if (new_status == 6) {
+                        setText('Customer has declined the repair and has upto 30 days to pickup there device before it is recycled.');
+                    } else if (new_status == 7) {
+                        setText('Customer has abandoned the device and is sloted to be recycled.');
+                    } else if (new_status == 9) {
+                        setText('Need to order a part for the device. Will take 3 to 5 buisness days for shipping.');
+                    } else if (new_status == 10) {
+                        setText('Device is currently being repaired.');
+                    } else if (new_status == 11) {
+                        setText('Device is repaired and ready for pickup.');
+                    } else if (new_status == 12) {
+                        setText('Device was not able to be repaired and is ready for pickup.');
+                    } else {
+                        document.getElementsByClassName("note-placeholder")[0].style = "display: block;";
+                        document.getElementsByClassName("btn-confirm")[4].disabled = true;
+                        var text_area = document.getElementsByClassName("note-editable")[0];
+                        text_area.innerHTML = "";
+                        eventFire(text_area, 'input');
                     }
                     status = new_status;
-                    document.getElementsByClassName("note-placeholder")[0].style = "display: none;";
-                    document.getElementsByClassName("btn-confirm")[4].disabled = false;
-                    var text_area = document.getElementsByClassName("note-editable")[0];
-                    text_area.innerHTML = text;
-                    text_area.dispatchEvent(event);
                 }
             }, 1000); // Checks every second.
         }
-    }, 10000); // Checks every 10 seconds.
-    /*
-    0 Awaiting Approval
-    1 Aw Call
-    2 Aw Dev
-    3 Aw Diag
-    4 Aw Parts
-    5 Aw Repair
-    6 Declined
-    7 Abandoned 
-    8 Diag
-    9 Need to order
-    10 In Prog
-    11 RFP
-    12 URFP
-    elements class "editor-add-in" #0 value 
-    elements class "note-editable' #0 innerHTML with quotes is the text area
-    elements class "note-placeholder" #0 style "display: none;" Make place holder text disapear.
-    elements class "btn-confirm" #4 Create Note button
-    */
+    }, 2000); // Checks every 2 seconds.
 })();
+
+/* Function to emulate events being fired. Mainly for a click event.
+*/
+function eventFire(el, etype) {
+    if (el.fireEvent) {
+        el.fireEvent('on' + etype);
+    } else {
+        var ev_obj = document.createEvent('Events');
+        ev_obj.initEvent(etype, true, false);
+        el.dispatchEvent(ev_obj);
+    }
+}
+
+function setText(text) {
+    document.getElementsByClassName("note-placeholder")[0].style = "display: none;";
+    document.getElementsByClassName("btn-confirm")[4].disabled = false;
+    var text_area = document.getElementsByClassName("note-editable")[0];
+    text_area.innerHTML = text;
+    eventFire(text_area, 'input');
+}
