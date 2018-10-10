@@ -41,7 +41,7 @@ function getTableGadget() {
         var quan_amoun = $(el).find("i-center").first().innerHTML;
         var total_amoun = $(el).find("i-right").eq(1).innerHTML;
         part_list.push(new part(item_num, price_amoun, quan_amoun, total_amoun);
-    }
+    });
 }
 
 function part(item, price, quan, total) {
