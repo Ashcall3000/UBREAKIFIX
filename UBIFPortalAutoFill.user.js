@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -18,29 +18,43 @@
         if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/")) {
             var status = document.getElementsByClassName("editor-add-in")[0].value;
             var text = "";
+            var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
             var run = setInterval(function() {
                 var new_status = document.getElementsByClassName("editor-add-in")[0].value;
                 if (new_status != status) {
-                    if (new_status == 0) {
-                        setText('Device has been repaired and passed tests.', "none", false);
-                    } else if (new_status == 1) {
-                        setText('Awaiting callback from the customer.', "none", false);
-                    } else if (new_status == 2) {
-                        setText('Awaiting for customer to bring in the device.', "none", false);
-                    } else if (new_status == 6) {
-                        setText('Customer has declined the repair and has upto 30 days to pickup there device before it is recycled.', "none", false);
-                    } else if (new_status == 7) {
-                        setText('Customer has abandoned the device and is sloted to be recycled.', "none", false);
-                    } else if (new_status == 9) {
-                        setText('Need to order a part for the device. Will take 3 to 5 buisness days for shipping.', "none", false);
-                    } else if (new_status == 10) {
-                        setText('Device is currently being repaired.', "none", false);
-                    } else if (new_status == 11) {
-                        setText('Device is repaired and ready for pickup.', "none", false);
-                    } else if (new_status == 12) {
-                        setText('Device was not able to be repaired and is ready for pickup.', "none", false);
+                    if (document.getElementsByTagName("select")[1].childElementCount == 8) { // Samsung page before ticket generation
+                        console.log(new_status);
+                        if (new_status == 7) {
+                            new_status = parseInt(new_status,10) + 2;
+                        } else {
+                            new_status = parseInt(new_status,10) + 1;
+                        }
+                        console.log(new_status);
+                    }
+                    if (new_status == 0) { // Awaiting Approval
+                        setText('Device has been repaired and passed tests.');
+                    } else if (new_status == 1) { // Awaiting Callback
+                        setText('Awaiting callback from the customer.');
+                    } else if (new_status == 2) { // Awaiting Device
+                        setText('Awaiting for customer to bring in the device.');
+                    } else if (new_status == 6) { // Declined
+                        setText('Customer has declined the repair and has upto 30 days to pickup there device before it is recycled.');
+                    } else if (new_status == 7) { // Abandoned
+                        setText('Customer has abandoned the device and is sloted to be recycled.');
+                    } else if (new_status == 9) { // Need to Order
+                        setText('Need to order a part for the device. Will take 3 to 5 buisness days for shipping.');
+                    } else if (new_status == 10) { // Repair in Progress
+                        setText('Device is currently being repaired.');
+                    } else if (new_status == 11) { // Repaired
+                        setText('Device is repaired and ready for pickup.');
+                    } else if (new_status == 12) { // Unrepairable
+                        setText('Device was not able to be repaired and is ready for pickup.');
                     } else {
-                        setText("", "block", true);
+                        document.getElementsByClassName("note-placeholder")[0].style = "display: block;";
+                        document.getElementsByClassName("btn-confirm")[4].disabled = true;
+                        var text_area = document.getElementsByClassName("note-editable")[0];
+                        text_area.innerHTML = "";
+                        eventFire(text_area, 'input');
                     }
                     status = new_status;
                 }
@@ -61,9 +75,9 @@ function eventFire(el, etype) {
     }
 }
 
-function setText(text, disp, dis) {
-    document.getElementsByClassName("note-placeholder")[0].style = "display: " + disp + "; ";
-    document.getElementsByClassName("btn-confirm")[4].disabled = dis;
+function setText(text) {
+    document.getElementsByClassName("note-placeholder")[0].style = "display: none;";
+    document.getElementsByClassName("btn-confirm")[4].disabled = false;
     var text_area = document.getElementsByClassName("note-editable")[0];
     text_area.innerHTML = text;
     eventFire(text_area, 'input');
