@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.2
+// @version      1.1.3
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -23,13 +23,13 @@
                 var new_status = document.getElementsByClassName("editor-add-in")[0].value;
                 if (new_status != status) {
                     if (document.getElementsByTagName("select")[1].childElementCount == 8) { // Samsung page before ticket generation
-                        console.log(new_status);
                         if (new_status == 7) {
                             new_status = parseInt(new_status,10) + 2;
                         } else {
                             new_status = parseInt(new_status,10) + 1;
                         }
-                        console.log(new_status);
+                    } else if (document.getElementsByTagName("select")[1].childElementCount == 10) { // Samsung page after ticket generation.
+                        new_status = parseInt(new_status,10) + 1;
                     }
                     if (new_status == 0) { // Awaiting Approval
                         setText('Device has been repaired and passed tests.');
