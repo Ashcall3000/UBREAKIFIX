@@ -13,8 +13,9 @@
 
 (function() {
     'use strict';
+    
     var start = setInterval(function() {
-        if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/") {
+        if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/")) {
             var status = document.getElementsByClassName("editor-add-in")[0].value;
             var text = "";
             var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
