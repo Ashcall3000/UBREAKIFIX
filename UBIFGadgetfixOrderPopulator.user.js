@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         New Userscript
+// @name         UBIF Gadgetfix Order Populator
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  try to take over the world!
 // @require http://code.jquery.com/jquery-3.3.1.min.js
 // @author       Christopher Sullivan
@@ -13,7 +13,7 @@
 // @grant        none
 // ==/UserScript==
 
-$(function() {
+(function() {
     'use strict';
 
     // Your code here...
@@ -33,20 +33,48 @@ $(function() {
         }
     }, 10000); // Runs every ten seconds
 })();
-            
+
+// cname is Gadgetfix Item Number,
+function setCookie(list, exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*60*60));
+    var expires = "expires="+ d.toUTCString();
+    var text = "";
+    for (var i = 0; i < list.length; i++) {
+        text += list[i].toString();
+    }
+    document.cookie = text + ";" + expires + ";path=/";
+}
+
+function getCookie() {
+    var decoded_cookie = decodeURIComponent(document.cookie);
+    var ca = decoded_cookie.split(';');
+    var list = [];
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        var info = c.split('=');
+        var temp = info[1].split('#');
+        list.push(new part(info[0], temp[0], temp[1], temp[2]));
+    }
+    return list;
+}
+
 function getTableGadget() {
     $("table.table-border > tbody > tr").each(function(el) {
         var item_num = $(el).find("p").first().innerHTML;
         var price_amoun = $(el).find("i-right").first().innerHTML;
         var quan_amoun = $(el).find("i-center").first().innerHTML;
         var total_amoun = $(el).find("i-right").eq(1).innerHTML;
-        part_list.push(new part(item_num, price_amoun, quan_amoun, total_amoun);
+        part_list.push(new part(item_num, price_amoun, quan_amoun, total_amoun));
     });
 }
 
 function part(item, price, quan, total) {
     this.item = item; // Item number from GadgetFix
     this.price = price; // Price of the part
-    this.quan = quan; // How many of the part is being ordered. 
+    this.quan = quan; // How many of the part is being ordered.
     this.total = total; // Total price for the parts ie price * quan
+    function toString() {
+        return this.item + "=" + this.price + "#" + this.quan + "#" + this.total + ";";
+    }
 }
