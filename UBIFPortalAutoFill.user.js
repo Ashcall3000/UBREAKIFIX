@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.3
+// @version      1.1.4
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -17,44 +17,49 @@
     var start = setInterval(function() {
         if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/")) {
             var status = document.getElementsByClassName("editor-add-in")[0].value;
-            var text = "";
-            var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
             var run = setInterval(function() {
                 var new_status = document.getElementsByClassName("editor-add-in")[0].value;
                 if (new_status != status) {
-                    if (document.getElementsByTagName("select")[1].childElementCount == 8) { // Samsung page before ticket generation
-                        if (new_status == 7) {
-                            new_status = parseInt(new_status,10) + 2;
-                        } else {
-                            new_status = parseInt(new_status,10) + 1;
+                    var val_list = document.querySelectorAll("select.editor-add-in option");
+                    var val = "";
+                    val_list.forEach(function(el) {
+                        if (el.value == new_status) {
+                            val = el.innerText;
                         }
-                    } else if (document.getElementsByTagName("select")[1].childElementCount == 10) { // Samsung page after ticket generation.
-                        new_status = parseInt(new_status,10) + 1;
-                    }
-                    if (new_status == 0) { // Awaiting Approval
-                        setText('Device has been repaired and passed tests.');
-                    } else if (new_status == 1) { // Awaiting Callback
-                        setText('Awaiting callback from the customer.');
-                    } else if (new_status == 2) { // Awaiting Device
-                        setText('Awaiting for customer to bring in the device.');
-                    } else if (new_status == 6) { // Declined
-                        setText('Customer has declined the repair and has upto 30 days to pickup there device before it is recycled.');
-                    } else if (new_status == 7) { // Abandoned
-                        setText('Customer has abandoned the device and is sloted to be recycled.');
-                    } else if (new_status == 9) { // Need to Order
-                        setText('Need to order a part for the device. Will take 3 to 5 buisness days for shipping.');
-                    } else if (new_status == 10) { // Repair in Progress
-                        setText('Device is currently being repaired.');
-                    } else if (new_status == 11) { // Repaired
-                        setText('Device is repaired and ready for pickup.');
-                    } else if (new_status == 12) { // Unrepairable
-                        setText('Device was not able to be repaired and is ready for pickup.');
-                    } else {
-                        document.getElementsByClassName("note-placeholder")[0].style = "display: block;";
-                        document.getElementsByClassName("btn-confirm")[4].disabled = true;
-                        var text_area = document.getElementsByClassName("note-editable")[0];
-                        text_area.innerHTML = "";
-                        eventFire(text_area, 'input');
+                    });
+                    switch (val) {
+                        case "Awaiting Approval":
+                            setText("none", false, "Device has been repaired and passed tests.");
+                            break;
+                        case "Awaiting Callback":
+                            setText("none", false, "Awaiting callback from the customer.");
+                            break;
+                        case "Awaiting Device":
+                            setText("none", false, "Awaiting for the customer to bring in their device.");
+                            break;
+                        case "Declined - RFP":
+                            setText("none", false, "Customer has declined the repair and has upto 30 days to pickup there device before it is recycled.");
+                            break;
+                        case "Device Abandoned":
+                            setText("none", false, "Customer has abandoned the device and is sloted to be recycled.");
+                            break;
+                        case "Need to Order Parts":
+                            setText("none", false, "Need to order parts for the device. Will take 3 to 5 business days for shipping.");
+                            break;
+                        case "Diag in Progress":
+                            setText("none", false, "Currently diagnosing the device to give customer a repair quote.");
+                            break;
+                        case "Repair in Progress":
+                            setText("none", false, "The device is currently being repaired.");
+                            break;
+                        case "Repaired - RFP":
+                            setText("none", false, "The device is repaired and ready for pickup.");
+                            break;
+                        case "Unrepairable - RFP":
+                            setText("none", false, "We were not able to rerpair the device and is ready for pickup. If not picked up within 30 days will be sloted to be recycled.");
+                            break;
+                        default:
+                            setText("block", true, "");
                     }
                     status = new_status;
                 }
@@ -75,9 +80,9 @@ function eventFire(el, etype) {
     }
 }
 
-function setText(text) {
-    document.getElementsByClassName("note-placeholder")[0].style = "display: none;";
-    document.getElementsByClassName("btn-confirm")[4].disabled = false;
+function setText(disp, disa, text) {
+    document.getElementsByClassName("note-placeholder")[0].style = "display: " + disp + ";";
+    document.getElementsByClassName("btn-confirm")[4].disabled = disa;
     var text_area = document.getElementsByClassName("note-editable")[0];
     text_area.innerHTML = text;
     eventFire(text_area, 'input');
