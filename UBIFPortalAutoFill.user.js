@@ -56,7 +56,7 @@
                             setText("none", false, "The device is repaired and ready for pickup.");
                             break;
                         case "Unrepairable - RFP":
-                            setText("none", false, "We were not able to rerpair the device and is ready for pickup. If not picked up within 30 days will be sloted to be recycled.");
+                            setText("none", false, "We were not able to repair the device and is ready for pickup. If not picked up within 30 days will be slotted to be recycled.");
                             break;
                         default:
                             setText("block", true, "");
