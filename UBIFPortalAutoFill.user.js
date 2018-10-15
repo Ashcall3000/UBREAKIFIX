@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.4
+// @version      1.1.5
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
