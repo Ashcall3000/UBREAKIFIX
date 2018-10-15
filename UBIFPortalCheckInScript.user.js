@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.4
+// @version      1.1.5
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -15,67 +15,45 @@
     'use strict';
     
     // Variables for array in input tag name.
-    const INPUT_PASS = 3;
-    const INPUT_CORD = 5;
-    const INPUT_SIM = 6;
-    const INPUT_CASE = 7;
-    const INPUT_TRAY = 8;
-    var event = new Event('change', { bubbles: true }); // Event used to update changes for page.
-    var test = true; // Used to test if page has been loaded previously/already.
-    var run = setInterval(function() {
-        var check_exist = setInterval(function() {
-            if (document.getElementsByClassName("condition-notes")[0] != null) {
-                if (test) {
-                    // variables
-                    var pc = prompt("Passcode for the device: ", "NA");
-                    var acc = prompt("Accessories with the device: ", "NA");
-                    var pcm = prompt("Prefered Contact Method: ", "NA");
-                    var cond = prompt("Condition of the device: ", "NA");
-                    var desc = prompt("Description of issue with device: ", "NA");
-                    var el_cond = document.getElementsByClassName("condition-notes")[0];
-                    var el_inputs = document.getElementsByTagName("input");
-                    var org_text = el_cond.value;
-                    // setting values
-                    el_inputs[INPUT_PASS].value = pc; // Settings Passcode field on page
-                    el_inputs[INPUT_PASS].dispatchEvent(event);
-                    var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
+    var test = true; // Program hasn't run yet.
+    var run = setInterval(function() { // Runs the script every 1 second
+        if (document.location.href.includes("https://portal.ubif.net/pos/device-repair-select/") &&
+           document.getElementsByClassName("condition-notes")[0] != null && test) { // Only runs on specific URL that has element with that class name
+            test = false; // Program has run.
+            // variables
+            var pc = prompt("Passcode for the device: ", "NA");
+            var acc = prompt("Accessories with the device: ", "NA");
+            var pcm = prompt("Prefered Contact Method: ", "NA");
+            var cond = prompt("Condition of the device: ", "NA");
+            var desc = prompt("Description of issue with device: ", "NA");
+            var el_cond = document.getElementsByClassName("condition-notes")[0];
+            var el_accs = document.getElementsByClassName("checklist-item");
+            var org_text = el_cond.value; // Gets the original text that is in the field.
+            var acc_up = acc.toUpperCase(); // To check values inside text.
+            var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
                         + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
                         + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm)
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
-                        + ((org_text == null) ? "" : ("\n | " + org_text));
-                    if (el_cond != null) {
-                        el_cond.value = text;
-                        el_cond.dispatchEvent(event);
-                        test = false;
+                        + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
+            setField(document.getElementsByTagName("input")[3], "input", pc); // Puts PC into Passcode field.
+            setField(el_cond, "input", text);
+            var acc_array = acc_up.split(" ");
+            for (var i = 0; i < acc_array.length; i++) {
+                for (var j = 0; j < el_accs.length; j++) {
+                    if (el_accs[j].innerText.toUpperCase().includes(acc_array[i])) {
+                        setField(el_accs[j].querySelector("input"), "click", true);
                     }
-                    var acc_up = acc.toUpperCase();
-                    if (acc_up.includes("SIM")) {
-                        eventFire(el_inputs[INPUT_SIM], 'click');
-                        el_inputs[INPUT_SIM].checked = true;
-                    }
-                    if (acc_up.includes("TRAY")) {
-                        eventFire(el_inputs[INPUT_TRAY], 'click');
-                        el_inputs[INPUT_TRAY].checked = true;
-                    }
-                    if (acc_up.includes("CASE")) {
-                        eventFire(el_inputs[INPUT_CASE], 'click');
-                        el_inputs[INPUT_CASE].checked = true;
-                    }
-                    if (acc_up.includes("CHARGE") || acc_up.includes("CORD")) {
-                        eventFire(el_inputs[INPUT_CORD], 'click');
-                        el_inputs[INPUT_CORD].checked = true;
-                    }
-                    clearInterval(check_exist);
                 }
             }
-        }, 1000); // check every 1 second
-        test = (document.getElementsByClassName("condition-notes")[0] == null);
-    }, 10000); // run every 10 seconds
+        } else if (!test && !document.location.href.includes("https://portal.ubif.net/pos/device-repair-select/")) {
+            test = true; // Program can run again.
+        }
+    }, 1000);
 })
 ();
 
-/* Function to emulate events being fired. Mainly for a click event. 
+/* Function to emulate events being fired. Mainly for a click event.
 */
 function eventFire(el, etype) {
     if (el.fireEvent) {
@@ -85,4 +63,13 @@ function eventFire(el, etype) {
         ev_obj.initEvent(etype, true, false);
         el.dispatchEvent(ev_obj);
     }
+}
+
+function setField(el, etype, text) {
+    if (etype == "input") {
+        el.value = text;
+    } else if (etype == "click") {
+        el.checked = text;
+    }
+    eventFire(el, etype);
 }
