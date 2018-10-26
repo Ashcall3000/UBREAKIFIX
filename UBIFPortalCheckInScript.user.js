@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.5
+// @version      1.1.6
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -21,7 +21,8 @@
            document.getElementsByClassName("condition-notes")[0] != null && test) { // Only runs on specific URL that has element with that class name
             test = false; // Program has run.
             // variables
-            var pc = prompt("Passcode for the device: ", "NA");
+            var saved_pc = document.getElementsByTagName("input")[3].value;
+            var pc = prompt("Passcode for the device: ", (saved_pc == null || saved_pc == "") ? "NA" : saved_pc);
             var acc = prompt("Accessories with the device: ", "NA");
             var pcm = prompt("Prefered Contact Method: ", "NA");
             var cond = prompt("Condition of the device: ", "NA");
