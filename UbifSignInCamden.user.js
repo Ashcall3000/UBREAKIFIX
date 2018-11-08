@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UbifSignInCamden
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  Creates buttons on the sign in popup to select which user you are.
 // @author       Christopher Sullivan
 // @include        https://portal.ubif.net/*
@@ -16,8 +16,7 @@ var passcodes = ['693769', '519880', '0000', '791605'];
 
 (function() {
     'use strict';
-
-    // Your code here...
+    
     var test = true; // Program hasn't run yet.
     // Run program every second.
     var run = setInterval(function() {
@@ -25,14 +24,15 @@ var passcodes = ['693769', '519880', '0000', '791605'];
             test = false;
             var element = document.getElementsByClassName("modal-sm")[0];
             if (element.querySelector(".modal-title").innerText == "Enter your PIN") {
-                var location = element.querySelector(".modal-body");
-                var org_text = location.innerHTML;
-                var text = "<div class=\"row\">";
+                var location = element.querySelector("div.modal-content:nth-child(1)");
+                var para = document.createElement("div");
+                para.className = "modal-body";
+                var text = "";
                 for (var i = 0; i < names.length; i++) {
                      text += "<button id=\"" + i + "\">" + names[i] + "</button>";
                 }
-                text += "</div>";
-                location.innerHTML = text + org_text;
+                location.appendChild(para);
+                para.innerHTML += text;
                 for (var j = 0; j < names.length; j++) {
                     document.getElementById(j).addEventListener("click", buttonClick);
                 }
@@ -47,7 +47,6 @@ function buttonClick() {
     console.log(passcodes[this.id]);
     var element = document.getElementById("pin-entry");
     element.value = passcodes[this.id];
-    element.dispatchEvent(new Event("input", {bubbles: true}));
-    document.querySelector("form.ng-pristine").dispatchEvent(new Event("submit"));
-
+    element.dispatchEvent(new Event("input", {bubbles:true}));
+    document.querySelector("button.btn:nth-child(2)").dispatchEvent(new Event("click", {bubbles:true}));
 }
