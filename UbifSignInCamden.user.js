@@ -12,7 +12,7 @@
 
 
 var names = ['Christopher', 'Syed', 'Andrew', 'Eddie'];
-var passcodes = ['693769', '519880', '0000', '791605'];
+var passcodes = ['693769', '519880', '896716', '791605'];
 
 (function() {
     'use strict';
