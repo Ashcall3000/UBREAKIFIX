@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         UbifSignInCamden
 // @namespace    http://tampermonkey.net/
-// @version      0.3
+// @version      0.4
 // @description  Creates buttons on the sign in popup to select which user you are.
 // @author       Christopher Sullivan
 // @include        https://portal.ubif.net/*
-// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
-// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
+// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UbifSignInCamden.user.js
+// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UbifSignInCamden.user.js
 // @grant        none
 // ==/UserScript==
 
