@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.6
+// @version      1.1.7
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -33,7 +33,7 @@
             var acc_up = acc.toUpperCase(); // To check values inside text.
             var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
                         + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
-                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm)
+                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : phoneNumberConvert(pcm))
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
@@ -53,6 +53,23 @@
     }, 1000);
 })
 ();
+
+function phoneNumberConvert(text) {
+    for (var i = 0; i < text.length; i++) {
+        if (text.charAt(i).isNaN() && text.charAt(i) != ' ') {
+            return text;
+        }
+    }
+    if (text.includes(' ')) {
+        text.replace(' ', '');
+    }
+    var phone = text.substring(0,3) + '-';
+    if (text.length > 7) {
+        phone += text.substring(3,6) + '-' + text.substring(6,10);
+    } else {
+        phone += text.substring(3,7);
+    }
+    return phone;
 
 /* Function to emulate events being fired. Mainly for a click event.
 */
