@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.7
+// @version      1.1.8
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -70,6 +70,7 @@ function phoneNumberConvert(text) {
         phone += text.substring(3,7);
     }
     return phone;
+}
 
 /* Function to emulate events being fired. Mainly for a click event.
 */
