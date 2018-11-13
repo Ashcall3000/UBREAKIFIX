@@ -33,7 +33,7 @@
             var acc_up = acc.toUpperCase(); // To check values inside text.
             var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
                         + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
-                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : phoneNumberConvert(pcm))S
+                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : phoneNumberConvert(pcm))
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
