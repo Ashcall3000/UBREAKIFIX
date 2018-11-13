@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.9
+// @version      1.2.0
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -13,7 +13,7 @@
 
 (function() {
     'use strict';
-    
+
     // Variables for array in input tag name.
     var test = true; // Program hasn't run yet.
     var run = setInterval(function() { // Runs the script every 1 second
@@ -33,7 +33,7 @@
             var acc_up = acc.toUpperCase(); // To check values inside text.
             var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
                         + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
-                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm)
+                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : phoneNumberConvert(pcm))S
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
@@ -56,7 +56,7 @@
 
 function phoneNumberConvert(text) {
     for (var i = 0; i < text.length; i++) {
-        if (text.charAt(i).isNaN() && text.charAt(i) != ' ') {
+        if (isNaN( text.charAt(i)) && text.charAt(i) != ' ') {
             return text;
         }
     }
