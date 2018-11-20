@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -33,7 +33,7 @@
             var acc_up = acc.toUpperCase(); // To check values inside text.
             var text = "PC: " + ((pc == null || pc == "") ? "NA" : pc)
                         + "\n| ACC: " + ((acc == null || acc == "") ? "NA" : acc)
-                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : phoneNumberConvert(pcm))
+                        + "\n| PCM: " + ((pcm == null || pcm == "") ? "NA" : pcm) //phoneNumberConvert(pcm))
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
