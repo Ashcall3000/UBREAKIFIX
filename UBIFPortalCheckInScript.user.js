@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -21,7 +21,9 @@
            document.getElementsByClassName("condition-notes")[0] != null && test) { // Only runs on specific URL that has element with that class name
             test = false; // Program has run.
             // variables
-            var saved_pc = document.getElementsByTagName("input")[3].value;
+            var is_google = (document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)") && 
+                             document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)").innerHTML != "Google");
+            var saved_pc = ((is_google) ? "" : document.getElementsByTagName("input"[3].value);
             var pc = prompt("Passcode for the device: ", (saved_pc == null || saved_pc == "") ? "NA" : saved_pc);
             var acc = prompt("Accessories with the device: ", "NA");
             var pcm = prompt("Prefered Contact Method: ", "NA");
@@ -37,7 +39,9 @@
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
-            setField(document.getElementsByTagName("input")[3], "input", pc); // Puts PC into Passcode field.
+            if (!is_google) {
+                setField(document.getElementsByTagName("input")[3], "input", pc); // Puts PC into Passcode field.
+            }
             setField(el_cond, "input", text);
             var acc_array = acc_up.split(" ");
             for (var i = 0; i < acc_array.length; i++) {
