@@ -21,9 +21,9 @@
            document.getElementsByClassName("condition-notes")[0] != null && test) { // Only runs on specific URL that has element with that class name
             test = false; // Program has run.
             // variables
-            var is_google = (document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)") && 
+            var is_google = (document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)") != null &&
                              document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)").innerHTML != "Google");
-            var saved_pc = ((is_google) ? "" : document.getElementsByTagName("input"[3].value);
+            var saved_pc = ((is_google) ? "" : document.getElementsByTagName("input"[3].value));
             var pc = prompt("Passcode for the device: ", (saved_pc == null || saved_pc == "") ? "NA" : saved_pc);
             var acc = prompt("Accessories with the device: ", "NA");
             var pcm = prompt("Prefered Contact Method: ", "NA");
