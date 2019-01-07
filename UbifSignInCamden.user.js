@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UbifSignInCamden
 // @namespace    http://tampermonkey.net/
-// @version      0.4
+// @version      0.5
 // @description  Creates buttons on the sign in popup to select which user you are.
 // @author       Christopher Sullivan
 // @include        https://portal.ubif.net/*
@@ -11,8 +11,8 @@
 // ==/UserScript==
 
 
-var names = ['Christopher', 'Syed', 'Andrew', 'Eddie'];
-var passcodes = ['693769', '519880', '896716', '791605'];
+var names = ['Christopher', 'Syed', 'Eddie'];
+var passcodes = ['693769', '519880', '791605'];
 
 (function() {
     'use strict';
