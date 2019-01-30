@@ -18,20 +18,21 @@
     var gadget_frame_created = false; // Whether iframe for gadgetfix has been added to the page or not.
     var gadget_vendor_selected = false; // Whether the vendor drop down menu is selected for gadgetfix or not.
     var gadget_convert_table = localStorage.getItem("gadget_convert_table"); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
-    console.log(gadget_convert_table);
-    if (gadget_convert_table == null || !gadget_convert_table) {
-        console.log("Gadget Table: " + gadget_convert_table);
-        localStorage.setItem("gadget_convert_table", true);
-        gadgetCreate();
-    }
-    if (document.location.href.includes("https://gadgetfix.com/customer/order/detail/")) {
-        // Runs only when on the gadgetfix order page
-        document.getElementsByClassName("container")[0].innerHTML += "<button id=\"copy\"> COPY </button> "
+    if (window === window.parent) { // Runs if script isn't running in an iFrame
+        if (gadget_convert_table == null || !gadget_convert_table) {
+            console.log("Gadget Table: " + gadget_convert_table);
+            localStorage.setItem("gadget_convert_table", true);
+            gadgetCreate();
+        }
+        if (document.location.href.includes("https://gadgetfix.com/customer/order/detail/")) {
+            // Runs only when on the gadgetfix order page
+            document.getElementsByClassName("container")[0].innerHTML += "<button id=\"copy\"> COPY </button> "
                 + "<style type=\"text/css\">#copy {position: fixed; z-index: 5; right: 1px; "
                 + "top: 100px; background-color: #4CAF50; border: none;color: white; "
                 + "font-size: 32px; cursor: pointer; padding: 10px; border-radius: 8px;}"
                 + " #copy:hover {background-color: RoyalBlue;} </style>";
-        document.getElementById("copy").addEventListener("click", copyClick);
+            document.getElementById("copy").addEventListener("click", copyClick);
+        }
     }
     var run = setInterval(function() {
         if (document.location.href.includes("https://portal.ubif.net/pos/purchasing/edit/")) {
@@ -49,6 +50,7 @@
             if (selector != null && !gadget_frame_created && select_val == "GadgetFix") {
                 gadget_vendor_selected = true;
                 gadget_frame_created = createFrame();
+                document.getElementById("copy").style.visibility = "hidden";
             }
             if (document.querySelector("iframe") == null) {
                 gadget_frame_created = false;
@@ -90,7 +92,8 @@ function copyClick() {
     for (var i = 0; i < list.length; i++) {
         table_text += list[i].text + "\n";
     }
-    save("Text.csv", table_text);
+    var filename = "Gadgetfix Order " + getTimeDate() + ".csv";
+    save(filename, table_text);
 }
 
 function getTableGadget() {
@@ -113,6 +116,16 @@ function part(item, price, quan) {
     this.price = price; // Price of the part
     this.quan = quan; // How many of the part is being ordered.
     this.text = '"","' + item + '","","","","","","' + price + '","' + quan + '","",""';
+}
+
+function getTimeDate() {
+    var d = new Date();
+    var month = d.getMonth() + 1;
+    var day = d.getDate();
+    var year = d.getFullYear();
+    var hours = d.getHours();
+    var mins = d.getMinutes();
+    return month + "-" + day + "-" + year + " " + hours + ":" + mins;
 }
 
 function gadgetConvert(item_number) {
