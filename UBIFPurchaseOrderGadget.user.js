@@ -18,6 +18,7 @@
     var gadget_frame_created = false; // Whether iframe for gadgetfix has been added to the page or not.
     var gadget_vendor_selected = false; // Whether the vendor drop down menu is selected for gadgetfix or not.
     var gadget_convert_table = localStorage.getItem("gadget_convert_table"); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
+    var ubif_copy_created = false // Whether the button was created to copy info in portal
     if (window === window.parent) { // Runs if script isn't running in an iFrame
         if (gadget_convert_table == null || !gadget_convert_table) {
             console.log("Gadget Table: " + gadget_convert_table);
@@ -27,12 +28,15 @@
         if (document.location.href.includes("https://gadgetfix.com/customer/order/detail/")) {
             // Runs only when on the gadgetfix order page
             document.getElementsByClassName("container")[0].innerHTML += "<button id=\"copy\"> COPY </button> "
-                + "<style type=\"text/css\">#copy {position: fixed; z-index: 5; right: 1px; "
+                + "<style type=\"text/css\">#copy {position: fixed; z-index: 1000; right: 1px; "
                 + "top: 100px; background-color: #4CAF50; border: none;color: white; "
                 + "font-size: 32px; cursor: pointer; padding: 10px; border-radius: 8px;}"
                 + " #copy:hover {background-color: RoyalBlue;} </style>";
             document.getElementById("copy").addEventListener("click", copyClick);
         }
+    } else {
+        localStorage.setItem("TESTING", "THIS INFO");
+        console.log("TESTING SET");
     }
     var run = setInterval(function() {
         if (document.location.href.includes("https://portal.ubif.net/pos/purchasing/edit/")) {
@@ -50,14 +54,57 @@
             if (selector != null && !gadget_frame_created && select_val == "GadgetFix") {
                 gadget_vendor_selected = true;
                 gadget_frame_created = createFrame();
-                document.getElementById("copy").style.visibility = "hidden";
+                //document.getElementById("copy").style.visibility = "hidden";
+                if (!ubif_copy_created) {
+                    document.querySelector("#page-container > div:nth-child(4)").innerHTML += "<button id=\"copy\"> COPY </button> "
+                        + "<style type=\"text/css\">#copy {position: fixed; z-index: 1000; right: 1px; "
+                        + "top: 100px; background-color: #4CAF50; border: none;color: white; "
+                        + "font-size: 18px; cursor: pointer; padding: 10px; border-radius: 8px;}"
+                        + " #copy:hover {background-color: RoyalBlue;} </style>";
+                    document.getElementById("copy").addEventListener("click", copyGadget);
+                    ubif_copy_created = true;
+                }
             }
             if (document.querySelector("iframe") == null) {
                 gadget_frame_created = false;
+                ubif_copy_created = false;
             }
         }
     }, 1000); // Runs every 5 seconds
 })();
+
+function copyGadget() {
+    var button = document.getElementById("copy");
+    console.log("CLICKED");
+    button.innerHTML = "COPIED";
+    button.disabled = true;
+    button.style.background = "Gray";
+    button.style.opacity = "0.3";
+    console.log(localStorage.getItem("TESTING"));
+    /*
+    // #csv-table > tbody:nth-child(3) > tr:nth-child(1) > td:nth-child(2) > span:nth-child(1)
+    // #csv-table > tbody:nth-child(3) > tr:nth-child(1) > td:nth-child(8) > span:nth-child(1) > input:nth-child(1)
+    var rows = window.parent.document.getElementById("#csv-table").getElementsByTagName("tr").length;
+    //var rows = document.querySelectorAll("tr").length;
+    console.log("ROWS: " + rows);
+    var list = getTableGadget();
+    for (var i = 0; i < rows; i++) {
+        var i_num = "#csv-table > tbody:nth-child(3) > tr:nth-child(" + (i + 1) + ") > td:nth-child(2) > span:nth-child(1)";
+        var i_price = "#csv-table > tbody:nth-child(3) > tr:nth-child(" + (i + 1) + ") > td:nth-child(8) > span:nth-child(1) > input:nth-child(1)";
+        if (document.querySelector(i_num) != 12001) {
+            var part = listSearch(list, i_num);
+            document.querySelector(i_price).value = part.price;
+        }
+    } */
+}
+
+function listSearch(list, item_part) {
+    for (var i = 0; i < list.length; i++) {
+        if (list[i].item == item_part) {
+            return list[i];
+        }
+    }
+}
 
 function createFrame() {
     var site_url = prompt("Paste the Gadgetfix URL into the text field", "https://www.GadgetFix.com");
@@ -97,8 +144,10 @@ function copyClick() {
 }
 
 function getTableGadget() {
-    console.log("getTableGadget()");
     var els = document.getElementsByTagName("tr");
+    if (window !== window.parent) { // Runs when in iFrame for portal.
+        els = document.getElementsByTagName("iframe")[0].getElementsByTagName("tr");
+    }
     var part_list = [];
     for (var i = 9; i < els.length - 7; i++) {
         var item_num = gadgetConvert(els[i].querySelector("p").innerText.substring(6));
@@ -125,7 +174,7 @@ function getTimeDate() {
     var year = d.getFullYear();
     var hours = d.getHours();
     var mins = d.getMinutes();
-    return month + "-" + day + "-" + year + " " + hours + ":" + mins;
+    return month + "-" + day + "-" + year + "_" + hours + "-" + mins;
 }
 
 function gadgetConvert(item_number) {
