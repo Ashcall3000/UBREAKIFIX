@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -15,14 +15,15 @@
 (function() {
     'use strict';
 
+    var gadget_table_number = "gadget_convert_table_2";
     var gadget_frame_created = false; // Whether iframe for gadgetfix has been added to the page or not.
     var gadget_vendor_selected = false; // Whether the vendor drop down menu is selected for gadgetfix or not.
-    var gadget_convert_table = localStorage.getItem("gadget_convert_table_1"); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
+    var gadget_convert_table = localStorage.getItem(gadget_table_number); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
     var ubif_copy_created = false // Whether the button was created to copy info in portal
     if (window === window.parent) { // Runs if script isn't running in an iFrame
         if (gadget_convert_table == null || !gadget_convert_table) {
             console.log("Gadget Table: " + gadget_convert_table);
-            localStorage.setItem("gadget_convert_table", true);
+            localStorage.setItem(gadget_table_number, true);
             gadgetCreate();
         }
         if (document.location.href.includes("https://gadgetfix.com/customer/order/detail/")) {
@@ -142,7 +143,7 @@ function copyGadget() {
         }
     }
     if (temp.length == temp_a.length) {
-        for (var i = 0; i < temp.length) {
+        for (var i = 0; i < temp.length; i++) {
             var i_price = temp.querySelector("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)")
             i_price.value = temp_a[i].price;
             buttonClick(i_price);
@@ -178,7 +179,7 @@ function buttonClick(elem) {
  * Creates an iFrame on ubif purchase portal page with custom URL.
  */
 function createFrame() {
-    var site_url = prompt("Paste the Gadgetfix URL into the text field", window.clipboardData.getData('Text'));
+    var site_url = prompt("Paste the Gadgetfix URL into the text field", "https://gadgetfix.com/");
     document.querySelector("#pos-left-content > div:nth-child(2)").innerHTML += "<iframe src=\""
     + site_url + "\" id=\"gadget_frame\" style=\"height: 300px; width: 100%; border: none; margin-bottom: 15px;\"></iframe>";
     return true;
@@ -211,7 +212,7 @@ function copyClick() {
         table_text += list[i].text + "\n";
     }
     var elem = document.createElement('textarea');
-    el.value = document.location.href;
+    elem.value = document.location.href;
     document.body.appendChild(elem);
     elem.select();
     document.execCommand('copy');
@@ -229,7 +230,7 @@ function getTableGadget() {
         var quan_amoun = els[i].querySelector(".i-center").innerText;
         part_list.push(new part(item_num, price_amoun, quan_amoun));
     }
-    if (window === window.parent) {
+    if (window !== window.parent) {
         part_list.push(new part("Other", document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(2) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)
                             , document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(3) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)));
     }
@@ -356,6 +357,26 @@ function gadgetCreate() {
     localStorage.setItem(352192989307, 29983); //  iPhone 6s Screen Black GV
     localStorage.setItem(352218603356, 8650); //  iPhone 6s Screen Black OEM
     localStorage.setItem(232383236227, 8651); //  iPhone 6s Screen White OEM
+	localStorage.setItem(371901150201, 8808); //  iPhone 6s Plus Back Camera
+	localStorage.setItem(352016016319, 17127); //  iPhone 6s Plus Home Button Gold
+	localStorage.setItem(371904667326, 17128); //  iPhone 6s Plus Home Button Silver
+	localStorage.setItem(371904667487, 17125); //  iPhone 6s Plus Home Button Black
+	localStorage.setItem(352137118807, 8809); //  iPhone 6s Plus Earpiece
+	localStorage.setItem(351984080886, 8807); //  iPhone 6s Plus Prox Flex
+	localStorage.setItem(232251805134, 8813); //  iPhone 6s Plus Power Flex
+	localStorage.setItem(232117056670, 8803); //  iPhone 6s Plus Battery
+	localStorage.setItem(352331470887, 8803); //  iPhone 6s Plus Battery
+	localStorage.setItem(231910788005, 8805); //  iPhone 6s Plus Dock White
+	localStorage.setItem(232286040826, 8804); //  iPhone 6s Plus Dock Light Gray
+	localStorage.setItem(231910809739, 8804); //  iPhone 6s Plus Dock Dark Gray
+	localStorage.setItem(231778139466, 32880); //  iPhone 6s Plus Screen White GV
+	localStorage.setItem(231778148124, 32879); //  iPhone 6s Plus Screen Black GV
+	localStorage.setItem(351747392493, 32880); //  iPhone 6s Plus Screen White GV
+	localStorage.setItem(352036444483, 32879); //  iPhone 6s Plus Screen Black GV
+	localStorage.setItem(351243051531, 32880); //  iPhone 6s Plus Screen White GV
+	localStorage.setItem(231408703951, 32879); //  iPhone 6s Plus Screen Black GV
+	localStorage.setItem(351820444501, 8801); //  iPhone 6s Plus Screen White OEM
+	localStorage.setItem(371735353160, 8800); //  iPhone 6s Plus Screen Black OEM
     localStorage.setItem(232430919622, 22126); //  iPhone 7 Ear Speaker
     localStorage.setItem(352212909854, 22134); //  iPhone 7 Loud Speaker
     localStorage.setItem(352013701811, 22130); //  iPhone 7 Dock Connector Black
@@ -410,11 +431,11 @@ function gadgetCreate() {
     localStorage.setItem(232570420768, 52184); //  iPhone 8 Plus Back Camera
     localStorage.setItem(352191979703, 52060); //  iPhone 8 Plus Screen White GV
     localStorage.setItem(372113738855, 52059); //  iPhone 8 Plus Screen Black GV
-    localStorage.setItem(351795890055, 52060); //  iPhone 8 Plus Screen White GV
+    localStorage.setItem(371214997666, 52060); //  iPhone 8 Plus Screen White GV
     localStorage.setItem(351742809926, 52059); //  iPhone 8 Plus Screen Black GV
     localStorage.setItem(231928581483, 52054); //  iPhone 8 Plus Screen White OEM
     localStorage.setItem(371612750070, 52053); //  iPhone 8 Plus Screen Black OEM
-	localStorage.setitem(351319041030, 79325); //  iPhone X Battery
+	localStorage.setItem(351319041030, 79325); //  iPhone X Battery
     localStorage.setItem(351975568388, 61562); //  iPhone X Dock Connector Black
     localStorage.setItem(232181051425, 74482); //  iPhone X Dock Connector White
     localStorage.setItem(351622468304, 61565); //  iPhone X Ear Speaker
@@ -438,7 +459,7 @@ function gadgetCreate() {
 	localStorage.setItem(231452234181, 84880); //  iPhone XS Max Back Camera Lens
 	localStorage.setItem(231448432511, 84875); //  iPhone XS Max Back Camera
 	localStorage.setItem(371230667862, 84879); //  iPhone XS Max Earpiece
-	localStorage.setItem(351319041931, 90371); //  iPhone XS Max OLED Black 
+	localStorage.setItem(351319041931, 90371); //  iPhone XS Max OLED Black
     localStorage.setItem(351309717832, 7031); //  iPad 2 Wifi Flex
     localStorage.setItem(220882592273, 7057); //  iPad 2 Power/Volume/Mute Button Flex
     localStorage.setItem(351309713089, 7036); //  iPad 2 Dock Connector
