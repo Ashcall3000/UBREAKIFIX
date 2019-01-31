@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -17,7 +17,7 @@
 
     var gadget_frame_created = false; // Whether iframe for gadgetfix has been added to the page or not.
     var gadget_vendor_selected = false; // Whether the vendor drop down menu is selected for gadgetfix or not.
-    var gadget_convert_table = localStorage.getItem("gadget_convert_table"); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
+    var gadget_convert_table = localStorage.getItem("gadget_convert_table_1"); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
     var ubif_copy_created = false // Whether the button was created to copy info in portal
     if (window === window.parent) { // Runs if script isn't running in an iFrame
         if (gadget_convert_table == null || !gadget_convert_table) {
@@ -414,15 +414,31 @@ function gadgetCreate() {
     localStorage.setItem(351742809926, 52059); //  iPhone 8 Plus Screen Black GV
     localStorage.setItem(231928581483, 52054); //  iPhone 8 Plus Screen White OEM
     localStorage.setItem(371612750070, 52053); //  iPhone 8 Plus Screen Black OEM
+	localStorage.setitem(351319041030, 79325); //  iPhone X Battery
     localStorage.setItem(351975568388, 61562); //  iPhone X Dock Connector Black
     localStorage.setItem(232181051425, 74482); //  iPhone X Dock Connector White
     localStorage.setItem(351622468304, 61565); //  iPhone X Ear Speaker
-    localStorage.setItem(351633110990, 61559); //  iPhone X LCD Black
+    localStorage.setItem(231729854649, 61559); //  iPhone X OLED Premium Black
+    localStorage.setItem(351633110990, 81500); //  iPhone X OLED Black GV
     localStorage.setItem(352307995499, 81500); //  iPhone X OLED Black GV
+    localStorage.setItem(351262122612, 81500); //  iPhone X OLED Black GV
     localStorage.setItem(231805622009, 61560); //  iPhone X Rear Camera
     localStorage.setItem(351599307946, 61561); //  iPhone X Front Camera
     localStorage.setItem(231805514836, 61570); //  iPhone X Side Buttons White
     localStorage.setItem(231796905118, 61569); //  iPhone X Side Buttons Black
+	localStorage.setItem(231470625821, 90372); //  iPhone XR LCD Black
+	localStorage.setItem(231452265229, 84889); //  iPhone XS Back Camera Lens
+	localStorage.setItem(351286007763, 84889); //  iPhone XS Back Camera Lens
+	localStorage.setItem(371236962434, 84889); //  iPhone XS Back Camera Lens
+	localStorage.setItem(351270318692, 97492); //  iPhone XS OLED Black GV
+	localStorage.setItem(372286434393, 97492); //  iPhone XS OLED Black GV
+	localStorage.setItem(231466433181, 90370); //  iPhone XS OLED Black Premium
+	localStorage.setItem(351283947922, 84880); //  iPhone XS Max Back Camera Lens
+	localStorage.setItem(371235368205, 84880); //  iPhone XS Max Back Camera Lens
+	localStorage.setItem(231452234181, 84880); //  iPhone XS Max Back Camera Lens
+	localStorage.setItem(231448432511, 84875); //  iPhone XS Max Back Camera
+	localStorage.setItem(371230667862, 84879); //  iPhone XS Max Earpiece
+	localStorage.setItem(351319041931, 90371); //  iPhone XS Max OLED Black 
     localStorage.setItem(351309717832, 7031); //  iPad 2 Wifi Flex
     localStorage.setItem(220882592273, 7057); //  iPad 2 Power/Volume/Mute Button Flex
     localStorage.setItem(351309713089, 7036); //  iPad 2 Dock Connector
@@ -454,6 +470,11 @@ function gadgetCreate() {
     localStorage.setItem(352271437222, 7101); //  iPad 5 Screen White
     localStorage.setItem(232658206096, 7101); //  iPad 5 Screen White
     localStorage.setItem(231848830149, 78514); //  iPad 6 LCD
+    localStorage.setItem(231777469291, 84583); //  iPad 6 Glass Black
+    localStorage.setItem(351590309880, 84584); //  iPad 6 Glass White
+    localStorage.setItem(371496149441, 84583); //  iPad 6 Glass Black
+    localStorage.setItem(351590277257, 84584); //  iPad 6 Glass White
+	localStorage.setItem(231766734246, 84584); //  iPad 6 Glass White
     localStorage.setItem(231068351342, 7072); //  iPad Mini Wifi Flex
     localStorage.setItem(370916635073, 7089); //  iPad Mini Dock Connector White
     localStorage.setItem(370916635041, 7088); //  iPad Mini Dock Connector Black
