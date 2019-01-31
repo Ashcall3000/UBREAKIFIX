@@ -34,9 +34,15 @@
                 + " #copy:hover {background-color: RoyalBlue;} </style>";
             document.getElementById("copy").addEventListener("click", copyClick);
         }
-    } else {
-        localStorage.setItem("TESTING", "THIS INFO");
-        console.log("TESTING SET");
+    } else { // Runs when site is in iframe
+        //window.parent.postMessage({
+        //    'func': 'parentFunc',
+        //    'message': 'Message text from iframe.'
+        //}, "*");
+        window.parent.postMessage({
+            'func': 'GadgetList',
+            'list': getTableGadget()
+        }, "*");
     }
     var run = setInterval(function() {
         if (document.location.href.includes("https://portal.ubif.net/pos/purchasing/edit/")) {
@@ -54,6 +60,7 @@
             if (selector != null && !gadget_frame_created && select_val == "GadgetFix") {
                 gadget_vendor_selected = true;
                 gadget_frame_created = createFrame();
+                enableCommunication();
                 //document.getElementById("copy").style.visibility = "hidden";
                 if (!ubif_copy_created) {
                     document.querySelector("#page-container > div:nth-child(4)").innerHTML += "<button id=\"copy\"> COPY </button> "
@@ -69,9 +76,33 @@
                 gadget_frame_created = false;
                 ubif_copy_created = false;
             }
+        } else if (ubif_copy_created) {
+            var elem = document.getElementById("copy");
+            elem.parentNode.removeChild(elem);
+            ubif_copy_created = false;
         }
     }, 1000); // Runs every 5 seconds
 })();
+
+var gadget_list = [];
+
+function enableCommunication() {
+    if (window.addEventListener) {
+        window.addEventListener("message", onMessage, false);
+    } else if (window.attachEvent) {
+        window.attachEvent("onmessage", onMessage, false);
+    }
+}
+
+function onMessage(event) {
+    // Check sender origin to be trusted
+    console.log("onMessage");
+    //if(!event.origin.includes("https://gadgetfix.com/")) return;
+    console.log("CONTINUE");
+    var data = event.data;
+    console.log(data);
+    gadget_list = event.data.list;
+}
 
 function copyGadget() {
     var button = document.getElementById("copy");
@@ -80,36 +111,39 @@ function copyGadget() {
     button.disabled = true;
     button.style.background = "Gray";
     button.style.opacity = "0.3";
-    console.log(localStorage.getItem("TESTING"));
-    /*
-    // #csv-table > tbody:nth-child(3) > tr:nth-child(1) > td:nth-child(2) > span:nth-child(1)
-    // #csv-table > tbody:nth-child(3) > tr:nth-child(1) > td:nth-child(8) > span:nth-child(1) > input:nth-child(1)
-    var rows = window.parent.document.getElementById("#csv-table").getElementsByTagName("tr").length;
-    //var rows = document.querySelectorAll("tr").length;
-    console.log("ROWS: " + rows);
-    var list = getTableGadget();
-    for (var i = 0; i < rows; i++) {
-        var i_num = "#csv-table > tbody:nth-child(3) > tr:nth-child(" + (i + 1) + ") > td:nth-child(2) > span:nth-child(1)";
-        var i_price = "#csv-table > tbody:nth-child(3) > tr:nth-child(" + (i + 1) + ") > td:nth-child(8) > span:nth-child(1) > input:nth-child(1)";
-        if (document.querySelector(i_num) != 12001) {
-            var part = listSearch(list, i_num);
-            document.querySelector(i_price).value = part.price;
+    var rows = document.querySelectorAll("#csv-table tr");
+    var temp = [];
+    for (var i = 0; i < rows.length; i++) {
+        if (rows[i].className == "") {
+            temp.push(rows[i]);
         }
-    } */
-}
-
-function listSearch(list, item_part) {
-    for (var i = 0; i < list.length; i++) {
-        if (list[i].item == item_part) {
-            return list[i];
+    }
+    rows = temp;
+    for (var i = 0; i < rows.length; i++) {
+        var i_num = rows[i].querySelector("td:nth-child(2) > span:nth-child(1)").innerHTML;
+        var i_price = rows[i].querySelector("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)");
+        if (i_num != 12001) {
+            var part = listSearch(i_num);
+            i_price.value = part.price;
         }
     }
 }
 
+function listSearch(item_part) {
+    for (var i = 0; i < gadget_list.length; i++) {
+        if (gadget_list[i].item == item_part) {
+            return gadget_list[i];
+        }
+    }
+}
+
+/**
+ * Creates an iFrame on ubif purchase portal page with custom URL.
+ */
 function createFrame() {
     var site_url = prompt("Paste the Gadgetfix URL into the text field", "https://www.GadgetFix.com");
     document.querySelector("#pos-left-content > div:nth-child(2)").innerHTML += "<iframe src=\""
-    + site_url + "\" style=\"height: 300px; width: 100%; border: none; margin-bottom: 15px;\"></iframe>";
+    + site_url + "\" id=\"gadget_frame\" style=\"height: 300px; width: 100%; border: none; margin-bottom: 15px;\"></iframe>";
     return true;
 }
 
@@ -145,9 +179,6 @@ function copyClick() {
 
 function getTableGadget() {
     var els = document.getElementsByTagName("tr");
-    if (window !== window.parent) { // Runs when in iFrame for portal.
-        els = document.getElementsByTagName("iframe")[0].getElementsByTagName("tr");
-    }
     var part_list = [];
     for (var i = 9; i < els.length - 7; i++) {
         var item_num = gadgetConvert(els[i].querySelector("p").innerText.substring(6));
