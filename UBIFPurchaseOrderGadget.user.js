@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      0.0.2
+// @version      1.0.0
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -125,8 +125,40 @@ function copyGadget() {
         if (i_num != 12001) {
             var part = listSearch(i_num);
             i_price.value = part.price;
+            buttonClick(i_price);
         }
     }
+    temp = [];
+    for (var i = 0; i < rows.length; i++) {
+        var i_num = rows[i].querySelector("td:nth-child(2) > span:nth-child(1)").innerHTML;
+        if (i_num == 12001) {
+            temp.push(rows[i]);
+        }
+    }
+    var temp_a = [];
+    for (var i = 0; i < gadget_list.length; i++) {
+        if (gadget_list[i].item == 12001) {
+            temp_a.push(gadget_list[i]);
+        }
+    }
+    if (temp.length == temp_a.length) {
+        for (var i = 0; i < temp.length) {
+            var i_price = temp.querySelector("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)")
+            i_price.value = temp_a[i].price;
+            buttonClick(i_price);
+        }
+    }
+    // UBIF TAX .totals-table > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(2) > input:nth-child(1)
+    // UBIF SHIP div.move-down-5:nth-child(4) > input:nth-child(2)
+    // GADGET SHIP .table-border > tfoot:nth-child(3) > tr:nth-child(2) > th:nth-child(6) > span:nth-child(1)
+    // GADGET TAX .table-border > tfoot:nth-child(3) > tr:nth-child(3) > th:nth-child(6) > span:nth-child(1)
+    var ship_tax = listSearch("Others");
+    var ubif_ship = document.querySelector("div.move-down-5:nth-child(4) > input:nth-child(2)");
+    ubif_ship.value = ship_tax.price;
+    buttonClick(ubif_ship);
+    var ubif_tax = document.querySelector(".totals-table > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(2) > input:nth-child(1)");
+    ubif_tax.value = ship_tax.quan;
+    buttonClick(ubif_tax);
 }
 
 function listSearch(item_part) {
@@ -137,11 +169,16 @@ function listSearch(item_part) {
     }
 }
 
+function buttonClick(elem) {
+    elem.dispatchEvent(new Event("input", {bubbles:true}));
+    elem.dispatchEvent(new Event("click", {bubbles:true}));
+}
+
 /**
  * Creates an iFrame on ubif purchase portal page with custom URL.
  */
 function createFrame() {
-    var site_url = prompt("Paste the Gadgetfix URL into the text field", "https://www.GadgetFix.com");
+    var site_url = prompt("Paste the Gadgetfix URL into the text field", window.clipboardData.getData('Text'));
     document.querySelector("#pos-left-content > div:nth-child(2)").innerHTML += "<iframe src=\""
     + site_url + "\" id=\"gadget_frame\" style=\"height: 300px; width: 100%; border: none; margin-bottom: 15px;\"></iframe>";
     return true;
@@ -173,6 +210,12 @@ function copyClick() {
     for (var i = 0; i < list.length; i++) {
         table_text += list[i].text + "\n";
     }
+    var elem = document.createElement('textarea');
+    el.value = document.location.href;
+    document.body.appendChild(elem);
+    elem.select();
+    document.execCommand('copy');
+    document.body.removeChild(elem);
     var filename = "Gadgetfix Order " + getTimeDate() + ".csv";
     save(filename, table_text);
 }
@@ -186,8 +229,10 @@ function getTableGadget() {
         var quan_amoun = els[i].querySelector(".i-center").innerText;
         part_list.push(new part(item_num, price_amoun, quan_amoun));
     }
-    //part_list.push(new part("Other", document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(2) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)
-    //                        , document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(3) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)));
+    if (window === window.parent) {
+        part_list.push(new part("Other", document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(2) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)
+                            , document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(3) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)));
+    }
     return part_list;
 }
 
