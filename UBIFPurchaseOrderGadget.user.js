@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -15,7 +15,6 @@
 (function() {
     'use strict';
 
-    var gadget_table_number = "gadget_convert_table_2";
     var gadget_frame_created = false; // Whether iframe for gadgetfix has been added to the page or not.
     var gadget_vendor_selected = false; // Whether the vendor drop down menu is selected for gadgetfix or not.
     var gadget_convert_table = localStorage.getItem(gadget_table_number); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
@@ -86,6 +85,7 @@
 })();
 
 var gadget_list = [];
+var gadget_table_number = "gadget_convert_table_2";
 
 function enableCommunication() {
     if (window.addEventListener) {
@@ -255,7 +255,7 @@ function getTimeDate() {
 }
 
 function gadgetConvert(item_number) {
-    if (localStorage.getItem("gadget_convert_table")) {
+    if (localStorage.getItem(gadget_table_number)) {
         var temp_num = localStorage.getItem(item_number);
         if (temp_num != null) {
             return temp_num;
