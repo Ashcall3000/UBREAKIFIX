@@ -11,8 +11,8 @@
 // ==/UserScript==
 
 
-var names = ['Christopher', 'Syed', 'Eddie'];
-var passcodes = ['693769', '519880', '791605'];
+var names = ['Christopher', 'Syed', 'Eddie', 'Martin'];
+var passcodes = ['693769', '519880', '791605', '164438'];
 
 (function() {
     'use strict';
