@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         UBIF Portal Check-In Script
+// @name         UBIF Portal Check-In Script2
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
+// @version      1.2.3
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -16,17 +16,18 @@
 
     // Variables for array in input tag name.
     var test = true; // Program hasn't run yet.
+    var google_test = true; // If button wasn't added for google devices then true
     var run = setInterval(function() { // Runs the script every 1 second
         if (document.location.href.includes("https://portal.ubif.net/pos/device-repair-select/") &&
            document.getElementsByClassName("condition-notes")[0] != null && test) { // Only runs on specific URL that has element with that class name
             test = false; // Program has run.
             // variables
-            var is_google = (document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)") != null &&
-                             document.querySelector(".breadcrumb > li:nth-child(5) > a:nth-child(1)").innerHTML != "Google");
-            var saved_pc = ((is_google) ? "" : document.getElementsByTagName("input"[3].value));
+            var passfield = (document.querySelector("#device-condition > accordion > div > div:nth-child(1) > div.panel-collapse.in > div > div > label") != null &&
+                              document.querySelector("#device-condition > accordion > div > div:nth-child(1) > div.panel-collapse.in > div > div > label").innerText == "Passcode:")
+            var saved_pc = ((!passfield) ? "" : document.getElementsByTagName("input")[3].value);
             var pc = prompt("Passcode for the device: ", (saved_pc == null || saved_pc == "") ? "NA" : saved_pc);
             var acc = prompt("Accessories with the device: ", "NA");
-            var pcm = prompt("Prefered Contact Method: ", "NA");
+            var pcm = phoneNumberConvert(prompt("Prefered Contact Method: ", "NA"));
             var cond = prompt("Condition of the device: ", "NA");
             var desc = prompt("Description of issue with device: ", "NA");
             var el_cond = document.getElementsByClassName("condition-notes")[0];
@@ -39,7 +40,7 @@
                         + "\n| COND: " + ((cond == null || cond == "") ? "NA" : cond)
                         + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                         + ((org_text == null || org_text == "") ? "" : ("\n | " + org_text));
-            if (!is_google) {
+            if (!passfield) {
                 setField(document.getElementsByTagName("input")[3], "input", pc); // Puts PC into Passcode field.
             }
             setField(el_cond, "input", text);
@@ -59,19 +60,20 @@
 ();
 
 function phoneNumberConvert(text) {
+    var temp = "";
     for (var i = 0; i < text.length; i++) {
-        if (isNaN( text.charAt(i)) && text.charAt(i) != ' ') {
+        var c = text.charAt(i);
+        if (isNaN(c) && c != ' ' && c != '/' && c != '-' && c != '.') {
             return text;
+        } else if (c != ' ' && c != '/' && c != '-' && c != '.') {
+            temp += c;
         }
     }
-    if (text.includes(' ')) {
-        text.replace(' ', '');
-    }
-    var phone = text.substring(0,3) + '-';
-    if (text.length > 7) {
-        phone += text.substring(3,6) + '-' + text.substring(6,10);
+    var phone = temp.substring(0,3) + '-';
+    if (temp.length > 7) {
+        phone += temp.substring(3,6) + '-' + temp.substring(6,10);
     } else {
-        phone += text.substring(3,7);
+        phone += temp.substring(3,7);
     }
     return phone;
 }
@@ -95,4 +97,14 @@ function setField(el, etype, text) {
         el.checked = text;
     }
     eventFire(el, etype);
+}
+
+function confirmButtonClick() {
+    console.log("Click");
+    var imei = document.querySelector("input.ng-dirty").value;
+    var serial_num = document.querySelector(".imei-verify > div:nth-child(2) > div:nth-child(1) > input:nth-child(2)").value;
+    localStorage.setItem("IMEI_NUMBER", imei);
+    localStorage.setItem("SERIAL_NUMBER", serial_num);
+    document.querySelector(".btn-confirm").style.visibility = "visible";
+    document.querySelector(".btn-confirm").dispatchEvent(new Event("click", {bubbles:true}));
 }
