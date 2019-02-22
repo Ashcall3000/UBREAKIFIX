@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.7
+// @version      1.1.8
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -62,7 +62,7 @@
                         default:
                             setText("block", "");
                     }
-                    status = new_status;
+                    status = document.getElementsByClassName("editor-add-in")[0].value;
                 }
             }, 1000); // Checks every second.
         }
@@ -72,6 +72,7 @@
 /* Function to emulate events being fired. Mainly for a click event.
 */
 function eventFire(el, etype) {
+    console.log("EventFire: " + etype);
     if (el.fireEvent) {
         el.fireEvent('on' + etype);
     } else {
