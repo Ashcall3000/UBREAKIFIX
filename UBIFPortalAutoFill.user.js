@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.8
+// @version      1.1.9
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -14,11 +14,15 @@
 (function() {
     'use strict';
 
+    var ran = false;
+    var status = null;
     var start = setInterval(function() {
         if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/") &&
            document.getElementsByClassName("editor-add-in")[0] != null) {
-            var status = document.getElementsByClassName("editor-add-in")[0].value;
-            var run = setInterval(function() {
+            if (!ran) {
+                status = document.getElementsByClassName("editor-add-in")[0].value;
+                ran = true;
+            } else {
                 var new_status = document.getElementsByClassName("editor-add-in")[0].value;
                 if (new_status != status) {
                     var val_list = document.querySelectorAll("select.editor-add-in option");
@@ -63,10 +67,11 @@
                             setText("block", "");
                     }
                     status = document.getElementsByClassName("editor-add-in")[0].value;
+                    ran = false;
                 }
-            }, 1000); // Checks every second.
+            }
         }
-    }, 2000); // Checks every 2 seconds.
+    }, 250); // Checks every 1/4 seconds.
 })();
 
 /* Function to emulate events being fired. Mainly for a click event.
