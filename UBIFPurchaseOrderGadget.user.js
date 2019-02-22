@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -17,14 +17,10 @@
 
     var gadget_frame_created = false; // Whether iframe for gadgetfix has been added to the page or not.
     var gadget_vendor_selected = false; // Whether the vendor drop down menu is selected for gadgetfix or not.
-    var gadget_convert_table = localStorage.getItem(gadget_table_number); // Whether the table to convert gadgetfix item numbers to UBIF part numbers
     var ubif_copy_created = false // Whether the button was created to copy info in portal
     if (window === window.parent) { // Runs if script isn't running in an iFrame
-        if (gadget_convert_table == null || !gadget_convert_table) {
-            console.log("Gadget Table: " + gadget_convert_table);
-            localStorage.setItem(gadget_table_number, true);
-            gadgetCreate();
-        }
+        console.log("Gadget Table: Created");
+        gadgetCreate();
         if (document.location.href.includes("https://gadgetfix.com/customer/order/detail/")) {
             // Runs only when on the gadgetfix order page
             document.getElementsByClassName("container")[0].innerHTML += "<button id=\"copy\"> COPY </button> "
@@ -85,7 +81,6 @@
 })();
 
 var gadget_list = [];
-var gadget_table_number = "gadget_convert_table_2";
 
 function enableCommunication() {
     if (window.addEventListener) {
@@ -255,13 +250,11 @@ function getTimeDate() {
 }
 
 function gadgetConvert(item_number) {
-    if (localStorage.getItem(gadget_table_number)) {
-        var temp_num = localStorage.getItem(item_number);
-        if (temp_num != null) {
-            return temp_num;
-        } else {
-            return "12001";
-        }
+    var temp_num = localStorage.getItem(item_number);
+    if (temp_num != null) {
+        return temp_num;
+    } else {
+        return "12001";
     }
 }
 
@@ -552,4 +545,6 @@ function gadgetCreate() {
     localStorage.setItem(372108923295, 56541); //  iPad Pro 12.9 2nd Gen Screen White
     localStorage.setItem(351584480429, 56540); //  iPad Pro 12.9 2nd Gen Screen Black
     localStorage.setItem(231764045324, 56541); //  iPad Pro 12.9 2nd Gen Screen White
+    localStorage.setItem(370892483243, 9078); //  iPod Touch 5/6th Gen Glass/LCD Black
+    localStorage.setItem(231508872323, 9055); //  iPod Touch 4th Gen Glass/LCD Black
 }
