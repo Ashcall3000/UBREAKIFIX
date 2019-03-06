@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -348,28 +348,32 @@ function gadgetCreate() {
     localStorage.setItem(371504137311, 29983); //  iPhone 6s Screen Black GV
     localStorage.setItem(372115001364, 29984); //  iPhone 6s Screen White GV
     localStorage.setItem(352192989307, 29983); //  iPhone 6s Screen Black GV
+    localStorage.setItem(371189788045, 29984); //  iPhone 6s Screen White GV
+    localStorage.setItem(350906493898, 29983); //  iPhone 6s Screen Black GV
     localStorage.setItem(352218603356, 8650); //  iPhone 6s Screen Black OEM
     localStorage.setItem(232383236227, 8651); //  iPhone 6s Screen White OEM
-	localStorage.setItem(371901150201, 8808); //  iPhone 6s Plus Back Camera
-	localStorage.setItem(352016016319, 17127); //  iPhone 6s Plus Home Button Gold
-	localStorage.setItem(371904667326, 17128); //  iPhone 6s Plus Home Button Silver
-	localStorage.setItem(371904667487, 17125); //  iPhone 6s Plus Home Button Black
-	localStorage.setItem(352137118807, 8809); //  iPhone 6s Plus Earpiece
-	localStorage.setItem(351984080886, 8807); //  iPhone 6s Plus Prox Flex
-	localStorage.setItem(232251805134, 8813); //  iPhone 6s Plus Power Flex
-	localStorage.setItem(232117056670, 8803); //  iPhone 6s Plus Battery
-	localStorage.setItem(352331470887, 8803); //  iPhone 6s Plus Battery
-	localStorage.setItem(231910788005, 8805); //  iPhone 6s Plus Dock White
-	localStorage.setItem(232286040826, 8804); //  iPhone 6s Plus Dock Light Gray
-	localStorage.setItem(231910809739, 8804); //  iPhone 6s Plus Dock Dark Gray
-	localStorage.setItem(231778139466, 32880); //  iPhone 6s Plus Screen White GV
-	localStorage.setItem(231778148124, 32879); //  iPhone 6s Plus Screen Black GV
-	localStorage.setItem(351747392493, 32880); //  iPhone 6s Plus Screen White GV
-	localStorage.setItem(352036444483, 32879); //  iPhone 6s Plus Screen Black GV
-	localStorage.setItem(351243051531, 32880); //  iPhone 6s Plus Screen White GV
-	localStorage.setItem(231408703951, 32879); //  iPhone 6s Plus Screen Black GV
-	localStorage.setItem(351820444501, 8801); //  iPhone 6s Plus Screen White OEM
-	localStorage.setItem(371735353160, 8800); //  iPhone 6s Plus Screen Black OEM
+    localStorage.setItem(371901150201, 8808); //  iPhone 6s Plus Back Camera
+    localStorage.setItem(352016016319, 17127); //  iPhone 6s Plus Home Button Gold
+    localStorage.setItem(371904667326, 17128); //  iPhone 6s Plus Home Button Silver
+    localStorage.setItem(371904667487, 17125); //  iPhone 6s Plus Home Button Black
+    localStorage.setItem(352137118807, 8809); //  iPhone 6s Plus Earpiece
+    localStorage.setItem(351984080886, 8807); //  iPhone 6s Plus Prox Flex
+    localStorage.setItem(232251805134, 8813); //  iPhone 6s Plus Power Flex
+    localStorage.setItem(232117056670, 8803); //  iPhone 6s Plus Battery
+    localStorage.setItem(352331470887, 8803); //  iPhone 6s Plus Battery
+    localStorage.setItem(231910788005, 8805); //  iPhone 6s Plus Dock White
+    localStorage.setItem(232286040826, 8804); //  iPhone 6s Plus Dock Light Gray
+    localStorage.setItem(231910809739, 8804); //  iPhone 6s Plus Dock Dark Gray
+    localStorage.setItem(231778139466, 32880); //  iPhone 6s Plus Screen White GV
+    localStorage.setItem(231778148124, 32879); //  iPhone 6s Plus Screen Black GV
+    localStorage.setItem(351747392493, 32880); //  iPhone 6s Plus Screen White GV
+    localStorage.setItem(352036444483, 32879); //  iPhone 6s Plus Screen Black GV
+    localStorage.setItem(351243051531, 32880); //  iPhone 6s Plus Screen White GV
+    localStorage.setItem(231408703951, 32879); //  iPhone 6s Plus Screen Black GV
+    localStorage.setItem(351243051531, 32880); //  iPhone 6s Plus Screen White GV
+    localStorage.setItem(231408703951, 32879); //  iPhone 6s Plus Screen Black GV
+    localStorage.setItem(351820444501, 8801); //  iPhone 6s Plus Screen White OEM
+    localStorage.setItem(371735353160, 8800); //  iPhone 6s Plus Screen Black OEM
     localStorage.setItem(232430919622, 22126); //  iPhone 7 Ear Speaker
     localStorage.setItem(352212909854, 22134); //  iPhone 7 Loud Speaker
     localStorage.setItem(352013701811, 22130); //  iPhone 7 Dock Connector Black
@@ -381,6 +385,8 @@ function gadgetCreate() {
     localStorage.setItem(232099868494, 33153); //  iPhone 7 Screen White GV
     localStorage.setItem(352174184146, 33152); //  iPhone 7 Screen Black GV
     localStorage.setItem(372089093586, 33153); //  iPhone 7 Screen White GV
+    localStorage.setItem(351225520972, 33152); //  iPhone 7 Screen White GV
+    localStorage.setItem(351224636116, 33153); //  iPhone 7 Screen Black GV
     localStorage.setItem(232597556830, 22037); //  iPhone 7 Screen Black OEM
     localStorage.setItem(232594561585, 22038); //  iPhone 7 Screen White OEM
     localStorage.setItem(352013048676, 22127); //  iPhone 7 Back Camera
@@ -395,6 +401,8 @@ function gadgetCreate() {
     localStorage.setItem(371752861300, 38066); //  iPhone 7 Plus Screen White GV
     localStorage.setItem(372108878039, 38065); //  iPhone 7 Plus Screen Black GV
     localStorage.setItem(372108909501, 38066); //  iPhone 7 Plus Screen White GV
+    localStorage.setItem(351225520972, 38065); //  iPhone 7 Plus Screen White GV
+    localStorage.setItem(351224636116, 38066); //  iPhone 7 Plus Screen Black GV
     localStorage.setItem(352035532621, 22138); //  iPhone 7 Plus Screen Black OEM
     localStorage.setItem(351671961729, 22139); //  iPhone 7 Plus Screen White OEM
     localStorage.setItem(371901922803, 51963); //  iPhone 8 Ear Speaker
@@ -410,6 +418,8 @@ function gadgetCreate() {
     localStorage.setItem(372113736469, 51895); //  iPhone 8 Screen Black GV
     localStorage.setItem(371696397868, 51896); //  iPhone 8 Screen White GV
     localStorage.setItem(371696413648, 51895); //  iPhone 8 Screen Black GV
+    localStorage.setItem(231391500748, 51896); //  iPhone 8 Screen White GV
+    localStorage.setItem(350746866612, 51895); //  iPhone 8 Screen Black GV
     localStorage.setItem(231928324494, 51890); //  iPhone 8 Screen White OEM
     localStorage.setItem(231928324955, 51889); //  iPhone 8 Screen Black OEM
     localStorage.setItem(371901922803, 52183); //  iPhone 8 Plus Ear Speaker
@@ -426,6 +436,8 @@ function gadgetCreate() {
     localStorage.setItem(372113738855, 52059); //  iPhone 8 Plus Screen Black GV
     localStorage.setItem(371214997666, 52060); //  iPhone 8 Plus Screen White GV
     localStorage.setItem(351742809926, 52059); //  iPhone 8 Plus Screen Black GV
+    localStorage.setItem(371214997666, 52060); //  iPhone 8 Plus Screen White GV
+    localStorage.setItem(351255769187, 52059); //  iPhone 8 Plus Screen Black GV
     localStorage.setItem(231928581483, 52054); //  iPhone 8 Plus Screen White OEM
     localStorage.setItem(371612750070, 52053); //  iPhone 8 Plus Screen Black OEM
 	localStorage.setItem(351319041030, 79325); //  iPhone X Battery
