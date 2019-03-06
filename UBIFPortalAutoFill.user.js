@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.1.9
+// @version      1.2.0
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -41,6 +41,9 @@
                             break;
                         case "Awaiting Device":
                             setText("none", "Awaiting for the customer to bring in their device.");
+                            break;
+                        case "Awaiting Repair":
+                            setText("none", "Parts are in stock for the repair and is slotted to be repaired.")
                             break;
                         case "Declined - RFP":
                             setText("none", "Customer has declined the repair and has upto 30 days to pickup there device before it is recycled.");
