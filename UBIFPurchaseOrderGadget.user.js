@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -385,8 +385,8 @@ function gadgetCreate() {
     localStorage.setItem(232099868494, 33153); //  iPhone 7 Screen White GV
     localStorage.setItem(352174184146, 33152); //  iPhone 7 Screen Black GV
     localStorage.setItem(372089093586, 33153); //  iPhone 7 Screen White GV
-    localStorage.setItem(351225520972, 33152); //  iPhone 7 Screen White GV
-    localStorage.setItem(351224636116, 33153); //  iPhone 7 Screen Black GV
+    localStorage.setItem(371207479214, 33152); //  iPhone 7 Screen White GV
+    localStorage.setItem(231412801228, 33153); //  iPhone 7 Screen Black GV
     localStorage.setItem(232597556830, 22037); //  iPhone 7 Screen Black OEM
     localStorage.setItem(232594561585, 22038); //  iPhone 7 Screen White OEM
     localStorage.setItem(352013048676, 22127); //  iPhone 7 Back Camera
