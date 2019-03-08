@@ -2,6 +2,7 @@ from os import getcwd
 from os import remove
 from os.path import isfile
 from pyprint import warning
+from pyprint import write
 
 
 def get_base_location():
@@ -26,8 +27,8 @@ class FileHandle(object):
         """Returns a string of the full path and filename with extension as a string."""
         return self.location + "\\" + self.filename + "." + self.ext
 
-    def __is_created(self) -> bool:
-        """Returns if the file with given filename and path exists or not."""
+    def created(self) -> bool:
+        """Returns if the file exists or not."""
         return isfile(self.get_full_path())
 
     def create(self, filename="", ext="ini", location=""):
@@ -38,11 +39,12 @@ class FileHandle(object):
             filename: Filename to create without extension.
             ext: The type of text file being created. Will Default to ini
             location: The location on HDD to look ie C://... Will Default to location where program is running."""
-        if not filename:
+        if filename:
             self.filename = filename
             self.ext = ext
             self.location = location
         try:
+            write("Creating File...")
             self.doc = open(self.get_full_path(), "w+")
             self.doc.close()
             return True
@@ -53,12 +55,13 @@ class FileHandle(object):
     def read(self) -> list:
         """Reads text from the file and returns array of strings. If unable to open file will print to user
         and return None"""
-        if not self.__is_created() and self.doc.closed:
+        if self.created():
             try:
+                write("Reading File...")
                 lines = []
                 self.doc = open(self.get_full_path(), 'r')
                 for line in self.doc:
-                    lines.append(line)
+                    lines.append(line.split('\n')[0])
                 self.doc.close()
                 return lines
             except OSError:
@@ -71,8 +74,9 @@ class FileHandle(object):
 
         Args:
             messages: Takes in multiple objects and strings."""
-        if not self.__is_created() and self.doc.closed:
+        if not self.created() and self.doc.closed:
             try:
+                write("Saving File...")
                 self.doc = open(self.get_full_path(), 'w')
                 for line in list(messages):
                     self.doc.write(line)
@@ -84,10 +88,28 @@ class FileHandle(object):
 
     def delete(self):
         """Deletes the file and returns if it was able to delete the file."""
-        if not self.__is_created() and self.doc.closed:
+        if not self.created() and self.doc.closed:
             try:
+                write("Deleting File...")
                 remove(self.get_full_path())
                 return True
             except OSError:
                 warning("Unable to Delete file: ", self.get_full_path())
         return False
+
+    def read_to_data(self, delimiter='=') -> dict:
+        """Will read the data and the put it into key value pairs using
+        the given delimiter to separate the text.
+
+        Args:
+            delimiter: Character used to separate the Key Value Pair. DEFAULT: ="""
+        strings = self.read()
+        if strings:
+            data = []
+            for s in strings:
+                data.append(s.split(delimiter))
+            key_value = {}
+            for d in data:
+                key_value[d[0]] = d[1]
+            return key_value
+        return {}
