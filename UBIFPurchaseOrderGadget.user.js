@@ -220,7 +220,7 @@ function getTableGadget() {
     var els = document.getElementsByTagName("tr");
     var part_list = [];
     for (var i = 9; i < els.length - 7; i++) {
-	if (els[i].querySelector("p") != Null) {
+	if (els[i].querySelector("p") != null) {
 	    var item_num = gadgetConvert(els[i].querySelector("p").innerText.substring(6));
             var price_amoun = els[i].querySelector(".i-right").innerText.substring(1);
             var quan_amoun = els[i].querySelector(".i-center").innerText;
