@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -220,10 +220,14 @@ function getTableGadget() {
     var els = document.getElementsByTagName("tr");
     var part_list = [];
     for (var i = 9; i < els.length - 7; i++) {
-        var item_num = gadgetConvert(els[i].querySelector("p").innerText.substring(6));
-        var price_amoun = els[i].querySelector(".i-right").innerText.substring(1);
-        var quan_amoun = els[i].querySelector(".i-center").innerText;
-        part_list.push(new part(item_num, price_amoun, quan_amoun));
+	if (els[i].querySelector("p") != Null) {
+	    var item_num = gadgetConvert(els[i].querySelector("p").innerText.substring(6));
+            var price_amoun = els[i].querySelector(".i-right").innerText.substring(1);
+            var quan_amoun = els[i].querySelector(".i-center").innerText;
+            part_list.push(new part(item_num, price_amoun, quan_amoun));
+	} else {
+	    break;
+	}
     }
     if (window !== window.parent) {
         part_list.push(new part("Other", document.querySelector(".table-border > tfoot:nth-child(3) > tr:nth-child(2) > th:nth-child(6) > span:nth-child(1)").innerText.substring(1)
