@@ -24,28 +24,34 @@ def run(browser: FireBrowser):
     browser.remind_me_later()
     if browser.check_selector(data['notify_check']):
         write("Looking at Notifications...")
-        while __delete_notifications(browser, data):
+        while delete_notifications(browser, data):
             browser.click(data['notify_dropdown_click'])
         while __find_updateable_notification(browser, data):
             """Check to see if asurion or if appointment."""
             browser.click(data['lead_textarea'])
-            browser.send_text(data['asurion_text'], 'lead_textarea')
+            headings = browser.get_elements_text(data['lead_type_heading'])
+            if contain_list("Appointment", headings):
+                browser.click(data['status_select'])
+                browser.click(data['status_select_awaiting'])
+                browser.send_text(data['appointment_text'], 'lead_textarea')
+            elif contain_list("Asurion", headings):
+                browser.send_text(data['asurion_text'], 'lead_textarea')
 
 
-def __delete_notifications(browser: FireBrowser, data: dict) -> bool:
-    noti_list = ['Submitted', 'Received', 'Auto Order']
+def delete_notifications(browser: FireBrowser, data: dict) -> bool:
+    noti_list = data['delete_noti'].split[',']
     write("Deleting Extra Notifications...")
     browser.click(data['notify_dropdown_click'])
     check = False
     for element in browser.get_elements(data['notify_message']):
-        if contain_list(element.text, noti_list):
+        if contain_list(element, noti_list):
             browser.click(browser.get_element(data['notify_delete'], element=element))
             check = True
     return check
 
 
 def __find_updateable_notification(browser: FireBrowser, data: dict) -> bool:
-    noti_list = ['New Asurion', 'Appointment']
+    noti_list = data['update_noti'].split[',']
     write("Updating Notifications...")
     browser.click(data['notify_dropdown_click'])
     for element in browser.get_elements(data['notify_message']):

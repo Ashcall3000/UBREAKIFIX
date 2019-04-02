@@ -45,7 +45,7 @@ class FileHandle(object):
             self.location = location
         try:
             write("Creating File...")
-            self.doc = open(self.get_full_path(), "w+")
+            self.doc = open(self.get_full_path(), "a")
             self.doc.close()
             return True
         except OSError:
@@ -68,16 +68,47 @@ class FileHandle(object):
                 warning("Could not find or open ", self.get_full_path())
         return []
 
+    def write_list(self, message) -> bool:
+        if self.created() and self.doc.closed:
+            try:
+                write("Writing to File...")
+                self.doc = open(self.get_full_path(), 'w')
+                for line in message:
+                    self.doc.write(line + '\n')
+                self.doc.close()
+                return True
+            except OSError:
+                warning("Could not find or open file ", self.get_full_path())
+        return False
+
     def write(self, *messages) -> bool:
         """Opens and writes given data to the file as text. Will print to the user if were unable to write to the
         file and return if we were able to write to file.
 
         Args:
             messages: Takes in multiple objects and strings."""
-        if not self.created() and self.doc.closed:
+        if self.created() and self.doc.closed:
             try:
                 write("Saving File...")
                 self.doc = open(self.get_full_path(), 'w')
+                for line in list(messages):
+                    self.doc.write(str(line) + '\n')
+                self.doc.close()
+                return True
+            except OSError:
+                warning("Could not find or open file ", self.get_full_path())
+        return False
+
+    def add(self, *messages) -> bool:
+        """Opens and writes given data to the file as text. Will print to the user if were unable to write to the
+                file and return if we were able to write to file.
+
+                Args:
+                    messages: Takes in multiple objects and strings."""
+        if self.created() and self.doc.closed:
+            try:
+                write("Saving File...")
+                self.doc = open(self.get_full_path(), 'a')
                 for line in list(messages):
                     self.doc.write(line)
                 self.doc.close()
@@ -113,3 +144,6 @@ class FileHandle(object):
                 key_value[d[0]] = d[1]
             return key_value
         return {}
+
+    def read_data_to_list(self, *delimiters) -> dict:
+        """Will read the data and the put into a key value pair"""

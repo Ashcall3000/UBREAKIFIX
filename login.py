@@ -21,7 +21,7 @@ def run(browser: FireBrowser):
     data = file.read_to_data()
     if browser.check_selector(data['login_css_click']):
         write("Logging in...")
-        browser.click(data['login_css_click'])
+        browser.click(data['login_css_click'], sleep_time=4)
         browser.send_text(data['username'], data['username_css_text'])
         browser.click(data['username_css_click'])
         browser.send_text(data['password'], data['password_css_text'])
