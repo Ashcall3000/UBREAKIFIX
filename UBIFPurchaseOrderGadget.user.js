@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -335,6 +335,8 @@ function gadgetCreate() {
     localStorage.setItem(371281698997, 18586); //  iPhone 6 Screen Black GV
     localStorage.setItem(371626810674, 18587); //  iPhone 6 Screen White GV
     localStorage.setItem(371629018822, 18586); //  iPhone 6 Screen Black GV
+    localStorage.setItem(371198239425, 18587); //  iPhone 6 Screen White GV
+    localStorage.setItem(231403007001, 18586); //  iPhone 6 Screen Black GV
     localStorage.setItem(371155812445, 8502); //  iPhone 6 Screen White OEM
     localStorage.setItem(231350666771, 8501); //  iPhone 6 Screen Black OEM
     localStorage.setItem(352018416744, 8620); //  iPhone 6 Plus Home Button Gold
