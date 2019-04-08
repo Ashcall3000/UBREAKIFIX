@@ -1,9 +1,3 @@
-// ==UserScript==
-// @name         FindElement
-// @version      0.1
-// @description  Functions used to find elements in the DOM
-// ==/UserScript==
-
 const FINDER = true;
 
 /**
