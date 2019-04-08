@@ -121,6 +121,31 @@ function findElementSibling(css, css_sib, text="", element=false) {
 }
 
 /**
+ * removeElement
+ * function that finds element and then removes the element from the DOM.
+ *
+ * @param css
+ * @param text
+ * @param css_sib
+ * @param element
+ */
+function removeElement(css, text="", css_sib="", element=false) {
+    var el;
+    if (typeof(css) == "string") {
+        if (css_sib !== "") {
+            el = findElementSibling(css, css_sib, text, element);
+        } else if (text !== "") {
+            el = findElementByText(css, text, element);
+        } else {
+            el = findElement(css, element);
+        }
+    } else {
+        el = css;
+    }
+    el.parentNode.removeChild(el);
+}
+
+/**
  * isExist - checks to see if an dom object exists while using
  * a css selector to find it.
  *
@@ -133,6 +158,17 @@ function check(selector) {
     } else {
         return false;
     }
+}
+
+/**
+ * checkURL
+ * function that checks to see if the given url is in the page url.
+ *
+ * @param url - String
+ * @return Boolean
+ */
+function checkURL(url) {
+    return document.location.href.includes(url);
 }
 
 /**
