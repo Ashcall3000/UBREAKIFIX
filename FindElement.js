@@ -1,3 +1,18 @@
+// ==UserScript==
+// @name         Find Elements
+// @namespace    http://tampermonkey.net/
+// @version      1.0.0
+// @description  Functions used to find elements in the DOM
+// @author       You
+// @match        https://portal.ubif.net/*
+// @run-at document-idle
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+})();
+
 const FINDER = true;
 
 /**
