@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         FindElement
-// @version      0.1
+// @version      0.2
 // @description  Functions used to find elements in the DOM
 // ==/UserScript==
 
@@ -107,4 +107,101 @@ function findElementSibling(css, css_sib, text="", element=false) {
     } else {
         return els[0];
     }
+}
+
+/**
+ * isExist - checks to see if an dom object exists while using
+ * a css selector to find it.
+ *
+ * @param selector - String
+ * @return boolean
+ */
+function check(selector) {
+    if (document.querySelectorAll(selector).length > 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * eventFire
+ * function that will fire a given event on element. If css parameter given
+ * is an element object it will not search for the element and fire on that
+ * given object. If css parameter is css selector text it will then search
+ * for the element. If text is given it will search for an element with the
+ * the css selector that contains that text. If css_sib is given it will search
+ * for a sibling of the original css selector that matches that css within the
+ * parent node. If element is given it will do any of the searches within that
+ * given element. The etype parameter can be a type such as click and will add
+ * on to make 'onClick'. Otherwise will just fire a even to trigger events
+ * assosiated with the element.
+ *
+ * @param css - Element Object or String CSS Selector
+ * @param etype  - String of Event Type to fire
+ * @param text - String of text to search for
+ * @param css_sib - String CSS Selector to find in parent of css
+ * @param element - Element Object to search within
+ */
+function eventFire(css, etype, text="", css_sib="", element=false) {
+    var el;
+    if (typeof(css) == "string") {
+        if (css_sib !== "") {
+            el = findElementSibling(css, css_sib, text, element);
+        } else if (text !== "") {
+            el = findElementByText(css, text, element);
+        } else {
+            el = findElement(css, element);
+        }
+    } else {
+        el = css;
+    }
+    if (el.fireEvent) {
+        el.fireEvent('on' + etype);
+    } else {
+        var ev_obj = document.createEvent('Events');
+        ev_obj.initEvent(etype, true, false);
+        el.dispatchEvent(ev_obj);
+    }
+}
+
+/**
+ * setField
+ * function that will  update a field by either giving it text of by checking the box.
+ * The etype is a string param that should either be 'input' for a text field or 'click'
+ * for a check box. The text param is for if the element is a text field or check box, if
+ * it's a check box it must be updated with true or false for the click state and text will
+ * will be a string for the text wanting to be put in the textfield. If css param is a css
+ * selector then it will search for the element using that selector. If text_search element
+ * is a string it will try to find an element with that text in it. If css_sib is a css
+ * selector it will search for a sibling of css that can be selected with css_sib. If
+ * element is given an Element Object it will search within that Element to find the
+ * element wanted.
+ *
+ * @param css - Element Object or String CSS Selector
+ * @param etype - Either 'input' or 'click'
+ * @param text - Either String or Boolean
+ * @param text_search - String to search for
+ * @param css_sib - String CSS Selector to find
+ * @param element - Element Object to search in
+ */
+function setField(css, etype, text, text_search="", css_sib="", element=false) {
+    var el;
+    if (typeof(css) == "string") {
+        if (css_sib !== "") {
+            el = findElementSibling(css, css_sib, text_search, element);
+        } else if (text_search !== "") {
+            el = findElementByText(css, text_search, element);
+        } else {
+            el = findElement(css, element);
+        }
+    } else {
+        el = css;
+    }
+    if (etype == "input") {
+        el.value = text;
+    } else if (etype == "click") {
+        el.checked = text;
+    }
+    eventFire(el, etype);
 }
