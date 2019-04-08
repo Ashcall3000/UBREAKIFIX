@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         UBIF Purchase Order Gadget Script
 // @namespace    http://tampermonkey.net/
-// @version      1.0.9
+// @version      1.1.0
 // @description  Helps the user create a gadgetfix po in the ubreakifix system.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
 // @include      https://gadgetfix.com/customer/order/detail/*
+// @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/FindElement.js
 // @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPurchaseOrderGadget.user.js
 // @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPurchaseOrderGadget.user.js
 // @run-at document-idle
@@ -21,14 +22,14 @@
     if (window === window.parent) { // Runs if script isn't running in an iFrame
         console.log("Gadget Table: Created");
         gadgetCreate();
-        if (document.location.href.includes("https://gadgetfix.com/customer/order/detail/")) {
+        if (checkURL("https://gadgetfix.com/customer/order/detail/")) {
             // Runs only when on the gadgetfix order page
-            document.getElementsByClassName("container")[0].innerHTML += "<button id=\"copy\"> COPY </button> "
+            findElement(".container").innerHTML += "<button id=\"copy\"> COPY </button> "
                 + "<style type=\"text/css\">#copy {position: fixed; z-index: 1000; right: 1px; "
                 + "top: 100px; background-color: #4CAF50; border: none;color: white; "
                 + "font-size: 32px; cursor: pointer; padding: 10px; border-radius: 8px;}"
                 + " #copy:hover {background-color: RoyalBlue;} </style>";
-            document.getElementById("copy").addEventListener("click", copyClick);
+            findElement("#copy").addEventListener("click", copyClick);
         }
     } else { // Runs when site is in iframe
         //window.parent.postMessage({
@@ -41,10 +42,10 @@
         }, "*");
     }
     var run = setInterval(function() {
-        if (document.location.href.includes("https://portal.ubif.net/pos/purchasing/edit/")) {
+        if (checkURL("https://portal.ubif.net/pos/purchasing/edit/")) {
             // Runs to see if the current vendor is Gadgetfix or not.
-            var selector = document.querySelector("select.ng-dirty");
-            var select_list = document.querySelectorAll("select.ng-dirty option");
+            var selector = findElement("select.ng-dirty");
+            var select_list = findElements("select.ng-dirty option");
             var select_val = "";
             if (selector != null && select_list != null) {
                 select_list.forEach(function(el) {
@@ -59,22 +60,21 @@
                 enableCommunication();
                 //document.getElementById("copy").style.visibility = "hidden";
                 if (!ubif_copy_created) {
-                    document.querySelector("#page-container > div:nth-child(4)").innerHTML += "<button id=\"copy\"> COPY </button> "
+                    findElement("#page-container > div:nth-child(4)").innerHTML += "<button id=\"copy\"> COPY </button> "
                         + "<style type=\"text/css\">#copy {position: fixed; z-index: 1000; right: 1px; "
                         + "top: 100px; background-color: #4CAF50; border: none;color: white; "
                         + "font-size: 18px; cursor: pointer; padding: 10px; border-radius: 8px;}"
                         + " #copy:hover {background-color: RoyalBlue;} </style>";
-                    document.getElementById("copy").addEventListener("click", copyGadget);
+                    findElement("#copy").addEventListener("click", copyGadget);
                     ubif_copy_created = true;
                 }
             }
-            if (document.querySelector("iframe") == null) {
+            if (findElement("iframe") == null) {
                 gadget_frame_created = false;
                 ubif_copy_created = false;
             }
         } else if (ubif_copy_created) {
-            var elem = document.getElementById("copy");
-            elem.parentNode.removeChild(elem);
+            removeElement("#copy");
             ubif_copy_created = false;
         }
     }, 1000); // Runs every 5 seconds
@@ -101,13 +101,13 @@ function onMessage(event) {
 }
 
 function copyGadget() {
-    var button = document.getElementById("copy");
+    var button = findElement("#copy");
     console.log("CLICKED");
     button.innerHTML = "COPIED";
     button.disabled = true;
     button.style.background = "Gray";
     button.style.opacity = "0.3";
-    var rows = document.querySelectorAll("#csv-table tr");
+    var rows = findElements("#csv-table tr");
     var temp = [];
     for (var i = 0; i < rows.length; i++) {
         if (rows[i].className == "") {
@@ -116,8 +116,8 @@ function copyGadget() {
     }
     rows = temp;
     for (var i = 0; i < rows.length; i++) {
-        var i_num = rows[i].querySelector("td:nth-child(2) > span:nth-child(1)").innerHTML;
-        var i_price = rows[i].querySelector("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)");
+        var i_num = findElement("td:nth-child(2) > span:nth-child(1)", rows[i]).innerHTML;
+        var i_price = findElement("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)", rows[i]);
         if (i_num != 12001) {
             var part = listSearch(i_num);
             i_price.value = part.price;
@@ -126,7 +126,7 @@ function copyGadget() {
     }
     temp = [];
     for (var i = 0; i < rows.length; i++) {
-        var i_num = rows[i].querySelector("td:nth-child(2) > span:nth-child(1)").innerHTML;
+        var i_num = findElement("td:nth-child(2) > span:nth-child(1)", rows[i]);
         if (i_num == 12001) {
             temp.push(rows[i]);
         }
@@ -139,7 +139,7 @@ function copyGadget() {
     }
     if (temp.length == temp_a.length) {
         for (var i = 0; i < temp.length; i++) {
-            var i_price = temp.querySelector("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)")
+            var i_price = findElement("td:nth-child(8) > span:nth-child(1) > input:nth-child(1)", temp);
             i_price.value = temp_a[i].price;
             buttonClick(i_price);
         }
@@ -149,10 +149,12 @@ function copyGadget() {
     // GADGET SHIP .table-border > tfoot:nth-child(3) > tr:nth-child(2) > th:nth-child(6) > span:nth-child(1)
     // GADGET TAX .table-border > tfoot:nth-child(3) > tr:nth-child(3) > th:nth-child(6) > span:nth-child(1)
     var ship_tax = listSearch("Others");
-    var ubif_ship = document.querySelector("div.move-down-5:nth-child(4) > input:nth-child(2)");
+    var ubif_ship = findElementSibiling("label", "input", "Shipping Cost:");
+    // var ubif_ship = findElement("div.move-down-5:nth-child(4) > input:nth-child(2)");
     ubif_ship.value = ship_tax.price;
     buttonClick(ubif_ship);
-    var ubif_tax = document.querySelector(".totals-table > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(2) > input:nth-child(1)");
+    var ubif_tax = findElementSibiling("td", "input", "Sales Tax:");
+    // var ubif_tax = findElement(".totals-table > tbody:nth-child(1) > tr:nth-child(3) > td:nth-child(2) > input:nth-child(1)");
     ubif_tax.value = ship_tax.quan;
     buttonClick(ubif_tax);
 }
@@ -175,7 +177,7 @@ function buttonClick(elem) {
  */
 function createFrame() {
     var site_url = prompt("Paste the Gadgetfix URL into the text field", "https://gadgetfix.com/");
-    document.querySelector("#pos-left-content > div:nth-child(2)").innerHTML += "<iframe src=\""
+    findElement("#pos-left-content > div:nth-child(2)").innerHTML += "<iframe src=\""
     + site_url + "\" id=\"gadget_frame\" style=\"height: 300px; width: 100%; border: none; margin-bottom: 15px;\"></iframe>";
     return true;
 }
@@ -194,22 +196,8 @@ function save(filename, text) {
     }
 }
 
-function getElementTextSearch(selector, text) {
-    var els = document.querySelectorAll(selector);
-    for (var i = 0; i < els.length; i++) {
-        try {
-            if (els[i].innerText.includes(text)) {
-                return els[i];
-            }
-        } catch(err) {
-            console.log("No innerText");
-        }
-    }
-    return null;
-}
-
 function copyClick() {
-    var button = document.getElementById("copy");
+    var button = findElement("#copy");
     console.log("CLICKED");
     button.innerHTML = "SAVED";
     button.disabled = true;
@@ -231,21 +219,21 @@ function copyClick() {
 }
 
 function getTableGadget() {
-    var els = document.getElementsByTagName("tr");
+    var els = findElements("tr");
     var part_list = [];
     for (var i = 9; i < els.length - 7; i++) {
 	if (els[i].querySelector("p") != null) {
-	    var item_num = gadgetConvert(els[i].querySelector("p").innerText.substring(6));
-            var price_amoun = els[i].querySelector(".i-right").innerText.substring(1);
-            var quan_amoun = els[i].querySelector(".i-center").innerText;
-            part_list.push(new part(item_num, price_amoun, quan_amoun));
+        var item_num = gadgetConvert(findElement("p", els[i]).innerText.substring(6));
+        var price_amoun = findElement(".i-right", els[i]).innerText.substring(1);
+        var quan_amoun = findElement(".i-center", els[i]).innerText;
+        part_list.push(new part(item_num, price_amoun, quan_amoun));
 	} else {
 	    break;
 	}
     }
     if (window !== window.parent) {
-        part_list.push(new part("Other", getElementTextSearch(".table-border th", "Shipping").innerText.substring(1),
-                                getElementTextSearch(".table-border th", "Tax").innerText.substring(1)));
+        part_list.push(new part("Other", findElementByText(".table-border th", "Shipping").innerText.substring(1),
+                                findElementByText(".table-border th", "Tax").innerText.substring(1)));
     }
     return part_list;
 }
