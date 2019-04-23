@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Find Elements
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Functions used to find elements in the DOM
 // @author       You
 // @match        https://portal.ubif.net/*
@@ -146,14 +146,15 @@ function removeElement(css, text="", css_sib="", element=false) {
 }
 
 /**
- * isExist - checks to see if an dom object exists while using
+ * check - checks to see if an dom object exists while using
  * a css selector to find it.
  *
- * @param selector - String
+ * @param css - String
+ * @param element - Element Object from document
  * @return boolean
  */
-function check(selector) {
-    if (document.querySelectorAll(selector).length > 0) {
+function check(css, element=false) {
+    if (findElements(css, element).length > 0) {
         return true;
     } else {
         return false;
