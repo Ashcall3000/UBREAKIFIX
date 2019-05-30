@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Find Elements
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Functions used to find elements in the DOM
 // @author       You
 // @match        https://portal.ubif.net/*
@@ -153,7 +153,7 @@ function removeElement(css, text="", css_sib="", element=false) {
  * @param element - Element Object from document
  * @return boolean
  */
-function check(css, element=false) {
+function checkElement(css, element=false) {
     if (findElements(css, element).length > 0) {
         return true;
     } else {
@@ -252,4 +252,21 @@ function setField(css, etype, text, text_search="", css_sib="", element=false) {
         el.checked = text;
     }
     eventFire(el, etype);
+}
+
+/**
+ * addHTML
+ * function that adds text to the html at the given doc html location.
+ *
+ * @param css - String css selector
+ * @param add_text - Text to add as innerHTML
+ * @param search_text - Text to search for to find element
+ * @param element - Searches in given element
+ */
+function addHTML(css, add_text, search_text="", element=false) {
+    var input = findElement(css, element);
+    if (search_text != "") {
+        input = findElementByText(css, search_text, element);
+    }
+    input.innerHTML += add_text;
 }
