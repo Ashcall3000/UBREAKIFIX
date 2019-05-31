@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Find Elements
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Functions used to find elements in the DOM
 // @author       You
 // @match        https://portal.ubif.net/*
@@ -62,8 +62,12 @@ function findElements(css, element=false) {
 function findElementByText(css, text, element=false) {
     var els = findElements(css, element);
     for (var i = 0; i < els.length; i++) {
-        if (els[i].innerText != "" && els[i].innerText.contains(text)) {
-            return els[i];
+        try {
+            if (els[i].innerText != "" && els[i].innerText.contains(text)) {
+                return els[i];
+            }
+        } catch(err) {
+            // Do Nothing
         }
     }
 }
@@ -81,14 +85,14 @@ function findElementByText(css, text, element=false) {
 function findElementsByText(css, text, element=false) {
     var els = findElements(css, element);
     var list;
-    try {
-        for (var i = 0; i < els.length; i++) {
+    for (var i = 0; i < els.length; i++) {
+        try {
             if (els[i].innerText != "" && els[i].innerText.contains(text)) {
                 list.push(els[i]);
             }
+        } catch(err) {
+            // Do Nothing
         }
-    } catch(err) {
-        // Do Nothing
     }
     return list;
 }
