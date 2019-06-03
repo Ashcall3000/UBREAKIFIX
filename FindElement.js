@@ -62,12 +62,8 @@ function findElements(css, element=false) {
 function findElementByText(css, text, element=false) {
     var els = findElements(css, element);
     for (var i = 0; i < els.length; i++) {
-        try {
-            if (els[i].innerText != "" && els[i].innerText.contains(text)) {
-                return els[i];
-            }
-        } catch(err) {
-            // Do Nothing
+        if (els[i].innerText != "" && els[i].innerText.includes(text)) {
+            return els[i];
         }
     }
 }
@@ -84,14 +80,10 @@ function findElementByText(css, text, element=false) {
  */
 function findElementsByText(css, text, element=false) {
     var els = findElements(css, element);
-    var list;
+    var list = [];
     for (var i = 0; i < els.length; i++) {
-        try {
-            if (els[i].innerText != "" && els[i].innerText.contains(text)) {
-                list.push(els[i]);
-            }
-        } catch(err) {
-            // Do Nothing
+        if (els[i].innerText != "" && els[i].innerText.contains(text)) {
+            list.push(els[i]);
         }
     }
     return list;
