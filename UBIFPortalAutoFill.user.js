@@ -6,8 +6,8 @@
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
 // @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/FindElement.js
-// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalAutoFillOG.user.js
-// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalAutoFillOG.user.js
+// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalAutoFill.user.js
+// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalAutoFill.user.js
 // @run-at document-idle
 // @grant        none
 // ==/UserScript==
