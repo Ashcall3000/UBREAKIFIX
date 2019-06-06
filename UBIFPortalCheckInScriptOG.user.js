@@ -5,8 +5,8 @@
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
-// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
-// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
+// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScriptOG.user.js
+// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScriptOG.user.js
 // @run-at document-idle
 // @grant        none
 // ==/UserScript==
