@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -103,30 +103,27 @@ function nextWindow(number) {
     } else if (number == 1) {
         second_title = "Accessories:";
         text = "What are the accessories being checked in with the device?";
-        pc = findElement('#update_info').value;
+        pc = removeal(findElement('#update_info').value);
     } else if (number == 2) {
         second_title = "Prefered Contact Method:";
         text = "In what way does the customer prefer to be contacted during the process of the repair?"
-        acc = findElement('#update_info').value;
-        acc = acc.substring(1);
+        acc = removeal(findElement('#update_info').value);
     } else if (number == 3) {
         second_title = "Condition:";
         text = "What is the condition of the device being checked in?";
         pcm = findElement('#update_info').value;
-        pcm = phoneNumberConvert(pcm.substring(1));
+        pcm = phoneNumberConvert(removeal(pcm));
     } else if (number == 4) {
         second_title = "Description:";
         text = "Describe the reason the customer is bring in their device today:";
-        cond = findElement('#update_info').value;
-        cond = cond.substring(1);
+        cond = removeal(findElement('#update_info').value);
     }
     if (number < 5) {
         findElement('#update_label').innerText = second_title;
         findElement('#update_prompt').innerText = text;
         findElement('#update_info').value = "";
     } else {
-        desc = findElement('#update_info').value;
-        desc = desc.substring(1);
+        desc = removeal(findElement('#update_info').value);
         cancelBox();
         updateNotes();
     }
@@ -142,6 +139,17 @@ function gotoNext(event) {
 function cancelBox() {
     deleteBox('#backdrop');
     deleteBox('#update_box');
+}
+
+function removeal(text) {
+    var temp = "";
+    for (var i = 0; i < text.length; i++) {
+        var c = text.charAt(i); 
+        if (c != '\n') {
+            temp += c;
+        }
+    }
+    return temp;
 }
 
 function phoneNumberConvert(text) {
