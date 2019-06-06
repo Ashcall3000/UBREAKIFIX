@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
+// @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/FindElement.js
 // @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalAutoFill.user.js
 // @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalAutoFill.user.js
 // @run-at document-idle
@@ -17,15 +18,14 @@
     var ran = false;
     var status = null;
     var start = setInterval(function() {
-        if (window.location.href.includes("https://portal.ubif.net/pos/checkout-new/") &&
-           document.getElementsByClassName("editor-add-in")[0] != null) {
+        if (checkURL("https://portal.ubif.net/pos/checkout-new/") && checkElement(".editor-add-in")) {
             if (!ran) {
-                status = document.getElementsByClassName("editor-add-in")[0].value;
+                status = findElement(".editor-add-in").value;
                 ran = true;
             } else {
-                var new_status = document.getElementsByClassName("editor-add-in")[0].value;
+                var new_status = findElement(".editor-add-in").value;
                 if (new_status != status) {
-                    var val_list = document.querySelectorAll("select.editor-add-in option");
+                    var val_list = findElements("select.editor-add-in option");
                     var val = "";
                     val_list.forEach(function(el) {
                         if (el.value == new_status) {
@@ -69,30 +69,42 @@
                         default:
                             setText("block", "");
                     }
-                    status = document.getElementsByClassName("editor-add-in")[0].value;
+                    status = findElement(".editor-add-in").value;
                     ran = false;
                 }
             }
+        } else if (checkURL("https://portal.ubif.net/pos/aqleads/edit/") && checkElement(".timeline > create-aqlead-note")) {
+            if (!ran) {
+                status = findElement("select.form-control").value;
+                ran = true;
+                var val_list = findElements("select.form-control option");
+                var val = "";
+                val_list.forEach(function(el) {
+                    if (el.value == status) {
+                        val = el.innerText;
+                    }
+                });
+                var text = "";
+                switch (val) {
+                    case "Awaiting Customer":
+                        text = "We set the part aside and are ready for you to come in at your earliest convenience.";
+                        break;
+                }
+                console.log("HERE");
+                console.log(text);
+                findElement(".placeholder-text").innerText = text;
+                setField(".placeholder-text", 'input', text);
+                findElement(".placeholder-text").setAttribute("placeholder", "");
+            } else if (findElement(".placeholder-text").innerText == "\n") {
+                ran = false;
+            }
+            //"select.form-control:nth-child(1)"
         }
     }, 250); // Checks every 1/4 seconds.
 })();
 
-/* Function to emulate events being fired. Mainly for a click event.
-*/
-function eventFire(el, etype) {
-    console.log("EventFire: " + etype);
-    if (el.fireEvent) {
-        el.fireEvent('on' + etype);
-    } else {
-        var ev_obj = document.createEvent('Events');
-        ev_obj.initEvent(etype, true, false);
-        el.dispatchEvent(ev_obj);
-    }
-}
-
 function setText(disp, text) {
-    document.getElementsByClassName("note-placeholder")[0].style = "display: " + disp + ";";
-    var text_area = document.getElementsByClassName("note-editable")[0];
-    text_area.innerHTML = text;
-    eventFire(text_area, 'input');
+    findElement(".note-placeholder").style = "display: " + disp + ";";
+    findElement(".note-editable").innerHTML = text;
+    setField(".note-editable", 'input', text);
 }
