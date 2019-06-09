@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.2
+// @version      1.3.3
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
 // @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/FindElement.js
-// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript2.user.js
-// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript2.user.js
+// @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
+// @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
 // @run-at document-idle
 // @grant        none
 // ==/UserScript==
@@ -34,10 +34,31 @@ var desc = "";
                 saved_pc = ((!passfield) ? "" : passfield.value);
             }
             // Creates the gray backdrop
-            addHTML('body div', '<div id="backdrop" class="modal-backdrop fade in" modal-animation-class="fade" modal-in-class="in" ng-style="{\'z-index\': 1040 + (index &amp;&amp; 1 || 0) + index*10}" modal-backdrop="modal-backdrop" modal-animation="true" style="z-index: 1051;"></div>');
+            addHTML('body div', '<div id="backdrop" class="modal-backdrop fade in" modal-animation-class="fade" modal-in-class="in" ng-style="{\'z-index\': 1040 + ' +
+                    '(index &amp;&amp; 1 || 0) + index*10}" modal-backdrop="modal-backdrop" modal-animation="true" style="z-index: 1051;"></div>');
             // Create the body
             createBox('PASSCODE', 'Passcode:', 'What is the passcode or password for the device?');
-            addHTML('#add_loc', '<style>input {position: absolute;opacity: 0;cursor: pointer;height: 0px;width: 0px;z-index: 10;-ms-transform: scale(2.5); /* IE */-moz-transform: scale(2.5); /* FF */-webkit-transform: scale(2.5); /* Safari and Chrome */-o-transform: scale(2.5); /* Opera */transform: scale(2.5);padding: 0px;left:30px;top:8px;}#keypad {padding-left: 220px;}.checkbox {width: 35px;height: 35px;background: #ddd;margin: 5px 5px;border-radius: 100%;position: relative;box-shadow: 0px 1px 3px rgba(0,0,0,0.5);}.checkbox label {display: block;width: 30px;height: 30px;border-radius: 100px;transition: all .5s ease;cursor: pointer;position: absolute;top: 3px;left: 2px;z-index: 0;background: #333;box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);}.checkbox:before {position: absolute;color: white;top: 0px;left: 10px;height: 0px;z-index: 1;font-weight: bold;font-size: 24px;}.checkbox input[type=checkbox]:checked + label {background: #26ca28;}#but1:before {content: "1";}#but2:before {content: "2";}#but3:before {content: "3";}#but4:before {content: "4";}#but5:before {content: "5";}#but6:before {content: "6";}#but7:before {content: "7";}#but8:before {content: "8";}#but9:before {content: "9";}button {width: 135px;color: white;background: red;box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);border-radius: 100px;font-weight: bold;font-size: 16px;}</style><div id="keypad"><table><tbody><tr><th><div id="but1" class="checkbox"><input type="checkbox" value="1" id="checkbox1" name="" style="width: 0px;"><label for="checkbox1"></label></div></th><th><div id="but2" class="checkbox"><input type="checkbox" value="2" id="checkbox2" name="" style="width: 0px;"><label for="checkbox2"></label></div></th><th><div id="but3" class="checkbox"><input type="checkbox" value="3" id="checkbox3" name="" style="width: 0px;"><label for="checkbox3"></label></div></th></tr><tr><th><div id="but4" class="checkbox"><input type="checkbox" value="4" id="checkbox4" name="" style="width: 0px;"><label for="checkbox4"></label></div></th><th><div id="but5" class="checkbox"><input type="checkbox" value="5" id="checkbox5" name="" style="width: 0px;"><label for="checkbox5"></label></div></th><th><div id="but6" class="checkbox"><input type="checkbox" value="6" id="checkbox6" name="" style="width: 0px;"><label for="checkbox6"></label></div></th></tr><tr><th><div id="but7" class="checkbox"><input type="checkbox" value="7" id="checkbox7" name="" style="width: 0px;"><label for="checkbox7"></label></div></th><th><div id="but8" class="checkbox"><input type="checkbox" value="8" id="checkbox8" name="" style="width: 0px;"><label for="checkbox8"></label></div></th><th><div id="but9" class="checkbox"><input type="checkbox" value="9" id="checkbox9" name="" style="width: 0px;"><label for="checkbox9"></label></div></th></tr></tbody></table><button id="clear_button">CLEAR</button></div>');
+            addHTML('#add_loc', '<style>input {position: absolute;opacity: 0;cursor: pointer;height: 13px;width: 13px;z-index: 10;-ms-transform: scale(2.5);' +
+                    ' /* IE */-moz-transform: scale(2.5); /* FF */-webkit-transform: scale(2.5); /* Safari and Chrome */-o-transform: scale(2.5); /* Opera */' +
+                    'transform: scale(2.5);padding: 0px;left:30px;top:8px;}#keypad {padding-left: 220px;}.checkbox {width: 35px;height: 35px;background: ' +
+                    '#ddd;margin: 5px 5px;border-radius: 100%;position: relative;box-shadow: 0px 1px 3px rgba(0,0,0,0.5);}.checkbox label {display: block;width:' +
+                    ' 30px;height: 30px;border-radius: 100px;transition: all .5s ease;cursor: pointer;position: absolute;top: 3px;left: 2px;z-index: 0;background:' +
+                    ' #333;box-shadow:inset 0px 1px 3px rgba(0,0,0,0.5);}.checkbox:before {position: absolute;color: white;top: 0px;left: 10px;height: 0px;z-index:' +
+                    ' 1;font-weight: bold;font-size: 24px;}.checkbox input[type=checkbox]:checked + label {background: #26ca28;}#but1:before {content: "1";}' +
+                    '#but2:before {content: "2";}#but3:before {content: "3";}#but4:before {content: "4";}#but5:before {content: "5";}#but6:before {content: "6";}' +
+                    '#but7:before {content: "7";}#but8:before {content: "8";}#but9:before {content: "9";}button {width: 135px;color: white;background: red;box-shadow:' +
+                    'inset 0px 1px 3px rgba(0,0,0,0.5);border-radius: 100px;font-weight: bold;font-size: 16px;}</style><div id="keypad"><table><tbody><tr>' +
+                    '<th><div id="but1" class="checkbox"><input type="checkbox" value="1" id="checkbox1" name="" style="width: 13px;"><label for="checkbox1"></label>' +
+                    '</div></th><th><div id="but2" class="checkbox"><input type="checkbox" value="2" id="checkbox2" name="" style="width: 13px;"><label for="checkbox2">' +
+                    '</label></div></th><th><div id="but3" class="checkbox"><input type="checkbox" value="3" id="checkbox3" name="" style="width: 13px;"><label' +
+                    ' for="checkbox3"></label></div></th></tr><tr><th><div id="but4" class="checkbox"><input type="checkbox" value="4" id="checkbox4" name="" style' +
+                    '="width: 13px;"><label for="checkbox4"></label></div></th><th><div id="but5" class="checkbox"><input type="checkbox" value="5" id="checkbox5" ' +
+                    'name="" style="width: 13px;"><label for="checkbox5"></label></div></th><th><div id="but6" class="checkbox"><input type="checkbox" value="6" ' +
+                    'id="checkbox6" name="" style="width: 13px;"><label for="checkbox6"></label></div></th></tr><tr><th><div id="but7" class="checkbox"><input type' +
+                    '="checkbox" value="7" id="checkbox7" name="" style="width: 13px;"><label for="checkbox7"></label></div></th><th><div id="but8" class="checkbox">' +
+                    '<input type="checkbox" value="8" id="checkbox8" name="" style="width: 13px;"><label for="checkbox8"></label></div></th><th><div id="but9" ' +
+                    'class="checkbox"><input type="checkbox" value="9" id="checkbox9" name="" style="width: 13px;"><label for="checkbox9"></label></div></th>' +
+                    '</tr></tbody></table><button id="clear_button">CLEAR</button></div>');
             findElement('tbody').addEventListener('click', keypad);
             findElement('#clear_button').addEventListener('click', function() {
                 var el = findElement('#update_info');
@@ -69,23 +90,25 @@ var desc = "";
 ();
 
 function keypad(event) {
-    var element = findElement('#update_info');
-    var num = event.target.id.substring(8);
-    if (!element.value.includes('Pattern[')) {
-        element.value = 'Pattern[] ' + element.value;
+    if (event.target.id.includes('checkbox')) {
+        var element = findElement('#update_info');
+        var num = event.target.id.substring(8);
+        if (!element.value.includes('Pattern[')) {
+            element.value = 'Pattern[] ' + element.value;
+        }
+        var start = 0;
+        var text = "";
+        if (event.target.checked) {
+            start = element.value.indexOf(']');
+            text = element.value.substring(0, start) + num;
+            text += element.value.substring(start);
+        } else {
+            start = element.value.indexOf(num);
+            text = element.value.substring(0, start);
+            text += element.value.substring(start + 1);
+        }
+        element.value = text;
     }
-    var start = 0;
-    var text = "";
-    if (event.target.checked) {
-        start = element.value.indexOf(']');
-        text = element.value.substring(0, start) + num;
-        text += element.value.substring(start);
-    } else {
-        start = element.value.indexOf(num);
-        text = element.value.substring(0, start);
-        text += element.value.substring(start + 1);
-    }
-    element.value = text;
 }
 
 function updateNotes() {
