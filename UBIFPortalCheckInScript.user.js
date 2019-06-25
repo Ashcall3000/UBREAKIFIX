@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.3
+// @version      1.3.4
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
-// @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/FindElement.js
+// @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/FindElement2.js
 // @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
 // @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFPortalCheckInScript.user.js
 // @run-at document-idle
@@ -28,7 +28,10 @@ var desc = "";
     var run = setInterval(function() { // Runs the script every 1 second
         if (checkURL("https://portal.ubif.net/pos/device-repair-select/") && checkElement(".condition-notes") && test) {
             test = false; // Program has run.
-            var passfield = findElementSibling('label', 'input', 'Passcode:');
+            var passfield = false;
+            if (findElementByText('a', 'Google') == null) {
+                passfield = findElementSibling('label', 'input', 'Passcode:');
+            }
             var saved_pc = "";
             if (passfield) {
                 saved_pc = ((!passfield) ? "" : passfield.value);
