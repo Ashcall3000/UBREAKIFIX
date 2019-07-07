@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.4
+// @version      1.3.5
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -18,6 +18,7 @@ var acc = "";
 var pcm = "";
 var cond = "";
 var desc = "";
+var passfield = false;
 
 (function() {
     'use strict';
@@ -28,7 +29,7 @@ var desc = "";
     var run = setInterval(function() { // Runs the script every 1 second
         if (checkURL("https://portal.ubif.net/pos/device-repair-select/") && checkElement(".condition-notes") && test) {
             test = false; // Program has run.
-            var passfield = false;
+            passfield = false;
             if (findElementByText('a', 'Google') == null) {
                 passfield = findElementSibling('label', 'input', 'Passcode:');
             }
@@ -126,7 +127,49 @@ function updateNotes() {
                 + "\n| DESC: " + ((desc == null || desc == "") ? "NA" : desc)
                 + ((org_text == null| org_text == "") ? "" : ("\n | " + org_text));
     setField(".condition-notes", "input", text);
+    if (passfield) {
+        var pass_loc = findElementSibling('label', 'input', 'Passcode:');
+        setField(pass_loc, "input", pc)
+    }
+    var words = getWords(acc);
+    for (var i = 0; i < words.length; i++) {
+        if (findElementByText('label', words[i])) {
+            var el = findElementSibling('label', 'input', words[i]);
+            if (el) {
+                setField(el, "click", true);
+            }
+        }
+    }
+
     //setField("input", 'input', (pc == null || pc == "") ? "NA" : pc, 'Passcode:', 'label');
+}
+
+function getWords(text) {
+    var temp = "";
+    var words = [];
+    var capped = false;
+    for (var i = 0; i < text.length; i++) {
+        var c = text.charAt(i);
+        if (c != ' ' && isNaN(c)) {
+            console.log(c);
+            if (!capped) {
+                temp = c.toUpperCase();
+                capped = true;
+            } else {
+                temp += c.toLowerCase();
+            }
+        } else {
+            if (temp.length > 0) {
+                words.push(temp);
+            }
+            temp = "";
+            capped = false;
+        }
+    }
+    if (temp.length > 0) {
+        words.push(temp);
+    }
+    return words;
 }
 
 function createBox(title, second_title, text) {
@@ -263,7 +306,7 @@ function phoneNumberConvert(text) {
         temp += (text.charAt(start - 1) != ' ') ? ' ' : '';
         temp += phone;
         temp += (text.charAt(end + 1) != ' ') ? ' ' : '';
-        temp += text.substring(end);
+        temp += text.substring((end == 0) ? text.length : end);
         return temp;
     } else {
         return text;
