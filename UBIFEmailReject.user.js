@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Email Reject
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Adds a button to add dummy email.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -18,7 +18,7 @@
     var created = true;
     var run = setInterval(function() {
         if (checkElement("#customer-email") && created) {
-            addHTML('#email label', '<button id="reject">Reject</button>');
+            addHTML('#email label', '<button id="reject" class="btn btn-cancel push-left fastclickable">Reject</button>');
             findElement('#reject').addEventListener("click", addText);
             created = false;
         } else if (!checkElement("#customer-email") && !created) {
