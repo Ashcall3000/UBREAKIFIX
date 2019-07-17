@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.5
+// @version      1.3.6
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -173,11 +173,11 @@ function getWords(text) {
 }
 
 function createBox(title, second_title, text) {
-    var html = '<div id="update_box" modal-render="true" tabindex="-1" role="dialog" class="modal fade fastclickable portal-base kbase-training-modal in"' +
+    var html = '<style>#skip_button, #submit_button, #update_button, .desc_button { color: #fff; background-color: #DA291C;} #update_title { color: #b71c1c;}</style><div id="update_box" modal-render="true" tabindex="-1" role="dialog" class="modal fade fastclickable portal-base kbase-training-modal in"' +
     'modal-animation-class="fade" modal-in-class="in" ng-style="{\'z-index\': 1050 + index*10, display: \'block\'}" ng-click="close($event)"' +
     'modal-window="modal-window" window-class="portal-base kbase-training-modal" size="md" index="1" animate="animate" modal-animation="true"' +
     'style="z-index: 1060; display: block;"><div class="modal-dialog modal-md" ng-class="size ? \'modal-\' + size : \'\'">' +
-    '<div class="modal-content" modal-transclude=""><div id="requiredTraining"><div class="modal-header"><h3 id="update_title" ' +
+    '<div class="modal-content" modal-transclude=""><div><div class="modal-header"><h3 id="update_title" ' +
     'class="modal-title">Device Check In<button id="update_button" type="button" class="btn btn-default fastclickable show" ng-class="buttonRemindMe">' +
     'Cancel</button></h3></div><div class="modal-body"><div class="row move-down-20" id="update_prompt">' + text + '</div>' +
     '<div class="row"></div><label id="update_label">' + second_title + '</label><textarea id="update_info" wrap="soft"></textarea><button id="skip_button"' +
@@ -207,11 +207,57 @@ function deleteBox(css) {
     element.parentNode.removeChild(element);
 }
 
+var DButTable = {
+    buttons : [],
+    makeButtons : function() {
+        this.buttons.push(new DButton('0_desc', 'Water Damage', ' Due to the unpredictable nature of water damage, we are not responsible for any loss of functionalities. '));
+        this.buttons.push(new DButton('1_desc', 'Unable to Test', ' We were unable to fully test the device so we cannot be responsible for any loss of functionalities. '));
+        this.buttons.push(new DButton('2_desc', 'Frame Bend', ' With any bend in the frame there is a chance the motherboard has been damaged. If that is the case there might be loss of some functionalities to the device.'));
+        this.buttons.push(new DButton('3_desc', 'Data Retrieval', ' Because we were not able to verify the data that needs to be recovered. We will consider it a successful data salvage as long as a large chunk or a lot of the data was recovered. '));
+        this.buttons.push(new DButton('4_desc', 'Extreme Damage', ' With extreme amounts of damage to the device it is hard to verify if there was any damage to the motherboard. If this is the case there might be loss of some functionalities to the device. '));
+        this.buttons.push(new DButton('5_desc', 'Screen Protector', ' We may have to remove the screen protector during the repair process. We apologize for any convience this may cause, but we will try out best to work around the accessories attached to your device. '));
+    },
+    printButtons : function() {
+        var bar_row = 4;
+        var len = this.buttons.length;
+        var text = '';
+        var width = (len < bar_row) ? parseInt(100 / len) : parseInt(100 /  bar_row);
+        var count = false;
+        for(var i = 0; i < len; i++) {
+            if (len > bar_row && len - i < bar_row && !count && i % bar_row == 0) {
+                width = parseInt(100 / (len - i));
+                 count = true;
+            }
+            text += '<button id="';
+            text += this.buttons[i].id;
+            text += '" type="button" class="btn btn-default desc_button" style="width:';
+            text += width;
+            text += '%">' + this.buttons[i].title;
+            text += '</button>';
+        }
+        addHTML('#add_loc', text);
+        findElement('#add_loc').addEventListener('click', function(e) {
+            console.log(e.target.id);
+            var id = (e.target.id.includes('desc')) ? e.target.id.charAt(0) : '';
+            if (!document.querySelector('#update_info').value.includes(DButTable.buttons[id]) && id != '') {
+                document.querySelector('#update_info').value += DButTable.buttons[id].text;
+            }
+        });
+    }
+};
+
+function DButton(id, title, text) {
+    this.title = title;
+    this.text = text;
+    this.id = id;
+}
+
 function nextWindow(number) {
     var title = "";
     var second_title = "";
     var text = "";
     var element = findElement('#update_info');
+    element.style.height = "75px";
     if (number == 0) {
         second_title = "Passcode:";
         text = "What is the pattern or password for the device being checked?";
@@ -235,14 +281,30 @@ function nextWindow(number) {
         second_title = "Description:";
         text = "Describe what the issue with the customers device:";
         cond = removeal(element.value);
+    } else if (number == 5) {
+        desc = removeal(element.value);
+        second_title = "Componenet Checklist:";
+        findElement('#skip_button').style.height = '0px';
+        findElement('#skip_button').style.visibility = "hidden";
+        findElement('#submit_button').style.width = '100%';
+        findElement('#update_info').style.height = '0px';
+        findElement('#update_info').style.visibility = "hidden";
     }
-    if (number < 5) {
+    if (number < 6) {
         findElement('#update_label').innerText = second_title;
         findElement('#update_prompt').innerText = text;
         element.value = "";
         findElement('#add_loc').innerHTML = '';
+        if (number == 4) {
+            DButTable.makeButtons();
+            DButTable.printButtons();
+        } else if (number == 5) {
+            var t = findElement('three-state-button-list');
+            findElement('#add_loc').appendChild(t);
+            findElement('#add_loc').style.height = '300px';
+        }
     } else {
-        desc = removeal(element.value);
+        findElement('#device-condition div.row').appendChild(findElement('three-state-button-list'));
         cancelBox();
         updateNotes();
     }
@@ -256,6 +318,9 @@ function gotoNext(event) {
 }
 
 function cancelBox() {
+    if (window == 5) {
+        findElement('#device-condition div.row').appendChild(findElement('three-state-button-list'));
+    }
     deleteBox('#backdrop');
     deleteBox('#update_box');
 }
