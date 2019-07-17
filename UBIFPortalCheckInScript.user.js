@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.7
+// @version      1.3.8
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -211,12 +211,12 @@ function deleteBox(css) {
 var DButTable = {
     buttons : [],
     makeButtons : function() {
-        this.buttons.push(new DButton('0_desc', 'Water Damage', ' Due to the unpredictable nature of water damage, we are not responsible for any loss of functionalities. '));
-        this.buttons.push(new DButton('1_desc', 'Unable to Test', ' We were unable to fully test the device so we cannot be responsible for any loss of functionalities. '));
-        this.buttons.push(new DButton('2_desc', 'Frame Bend', ' With any bend in the frame there is a chance the motherboard has been damaged. If that is the case there might be loss of some functionalities to the device.'));
-        this.buttons.push(new DButton('3_desc', 'Data Retrieval', ' Because we were not able to verify the data that needs to be recovered. We will consider it a successful data salvage as long as a large chunk or a lot of the data was recovered. '));
-        this.buttons.push(new DButton('4_desc', 'Extreme Damage', ' With extreme amounts of damage to the device it is hard to verify if there was any damage to the motherboard. If this is the case there might be loss of some functionalities to the device. '));
-        this.buttons.push(new DButton('5_desc', 'Screen Protector', ' We may have to remove the screen protector during the repair process. We apologize for any convience this may cause, but we will try out best to work around the accessories attached to your device. '));
+        this.buttons.push(new DButton('0_desc', 'Water Damage', '| Due to the unpredictable nature of water damage, we are not responsible for any loss of functionalities. |'));
+        this.buttons.push(new DButton('1_desc', 'Unable to Test', '| We were unable to fully test the device so we cannot be responsible for any loss of functionalities. |'));
+        this.buttons.push(new DButton('2_desc', 'Frame Bend', '| With any bend in the frame there is a chance the motherboard has been damaged. If that is the case there might be loss of some functionalities to the device. |'));
+        this.buttons.push(new DButton('3_desc', 'Data Retrieval', '| Because we were not able to verify the data that needs to be recovered. We will consider it a successful data salvage as long as a large chunk or a lot of the data was recovered. |'));
+        this.buttons.push(new DButton('4_desc', 'Extreme Damage', '| With extreme amounts of damage to the device it is hard to verify if there was any damage to the motherboard. If this is the case there might be loss of some functionalities to the device. |'));
+        this.buttons.push(new DButton('5_desc', 'Screen Protector', |' We may have to remove the screen protector during the repair process. We apologize for any convience this may cause, but we will try out best to work around the accessories attached to your device. |'));
     },
     printButtons : function() {
         var bar_row = 4;
