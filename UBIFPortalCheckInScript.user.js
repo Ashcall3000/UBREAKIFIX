@@ -173,7 +173,8 @@ function getWords(text) {
 }
 
 function createBox(title, second_title, text) {
-    var html = '<style>#skip_button, #submit_button, #update_button, .desc_button { color: #fff !important; background-color: #DA291C !important;} #update_title { color: #b71c1c;}</style><div id="update_box" modal-render="true" tabindex="-1" role="dialog" class="modal fade fastclickable portal-base kbase-training-modal in"' +
+    var html = '<style>#skip_button, #submit_button, #update_button, .desc_button { color: #fff !important; background-color: #DA291C !important;} .desc_button:hover { color: #fff !important; background-color: #B71C1C !important};' +
+        '#update_title { color: #b71c1c;}</style><div id="update_box" modal-render="true" tabindex="-1" role="dialog" class="modal fade fastclickable portal-base kbase-training-modal in"' +
     'modal-animation-class="fade" modal-in-class="in" ng-style="{\'z-index\': 1050 + index*10, display: \'block\'}" ng-click="close($event)"' +
     'modal-window="modal-window" window-class="portal-base kbase-training-modal" size="md" index="1" animate="animate" modal-animation="true"' +
     'style="z-index: 1060; display: block;"><div class="modal-dialog modal-md" ng-class="size ? \'modal-\' + size : \'\'">' +
