@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.9
+// @version      1.3.9.1
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -213,6 +213,7 @@ function deleteBox(css) {
 var DButTable = {
     buttons : [],
     makeButtons : function() {
+        this.buttons = [];
         this.buttons.push(new DButton('0_desc', 'Water Damage', '| Due to the unpredictable nature of water damage, we are not responsible for any loss of functionalities. |'));
         this.buttons.push(new DButton('1_desc', 'Unable to Test', '| We were unable to fully test the device so we cannot be responsible for any loss of functionalities. |'));
         this.buttons.push(new DButton('2_desc', 'Frame Bend', '| With any bend in the frame there is a chance the motherboard has been damaged. If that is the case there might be loss of some functionalities to the device. |'));
