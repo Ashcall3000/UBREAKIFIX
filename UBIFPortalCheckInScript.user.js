@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.9.1
+// @version      1.3.9.2
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -288,11 +288,13 @@ function nextWindow(number) {
     } else if (number == 5) {
         desc = removeal(element.value);
         second_title = "Componenet Checklist:";
-        findElement('#skip_button').style.height = '0px';
-        findElement('#skip_button').style.visibility = "hidden";
-        findElement('#submit_button').style.width = '100%';
-        findElement('#update_info').style.height = '0px';
-        findElement('#update_info').style.visibility = "hidden";
+        if (checkElement('three-state-button-list')) {
+            findElement('#skip_button').style.height = '0px';
+            findElement('#skip_button').style.visibility = "hidden";
+            findElement('#submit_button').style.width = '100%';
+            findElement('#update_info').style.height = '0px';
+            findElement('#update_info').style.visibility = "hidden";
+        }
     }
     if (number < 6) {
         findElement('#update_label').innerText = second_title;
@@ -303,12 +305,19 @@ function nextWindow(number) {
             DButTable.makeButtons();
             DButTable.printButtons();
         } else if (number == 5) {
-            var t = findElement('three-state-button-list');
-            findElement('#add_loc').appendChild(t);
-            findElement('#add_loc').style.height = '300px';
+            if (checkElement('three-state-button-list')) {
+                var t = findElement('three-state-button-list');
+                findElement('#add_loc').appendChild(t);
+                findElement('#add_loc').style.height = '300px';
+            } else {
+                cancelBox();
+                updateNotes();
+            }
         }
     } else {
-        findElement('#device-condition div.row').appendChild(findElement('three-state-button-list'));
+        if (checkElement('three-state-button-list')) {
+            findElement('#device-condition div.row').appendChild(findElement('three-state-button-list'));
+        }
         cancelBox();
         updateNotes();
     }
@@ -322,7 +331,7 @@ function gotoNext(event) {
 }
 
 function cancelBox() {
-    if (window == 5) {
+    if (window == 5 && checkElement('three-state-button-list')) {
         findElement('#device-condition div.row').appendChild(findElement('three-state-button-list'));
     }
     deleteBox('#backdrop');
