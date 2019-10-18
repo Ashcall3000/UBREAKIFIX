@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.9.2
+// @version      1.3.9.3
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -221,6 +221,15 @@ var DButTable = {
         this.buttons.push(new DButton('4_desc', 'Extreme Damage', '| With extreme amounts of damage to the device it is hard to verify if there was any damage to the motherboard. If this is the case there might be loss of some functionalities to the device. |'));
         this.buttons.push(new DButton('5_desc', 'Screen Protector', '| We may have to remove the screen protector during the repair process. We apologize for any convience this may cause, but we will try out best to work around the accessories attached to your device. |'));
     },
+    makeContactButtons : function() {
+        this.buttons = [];
+        this.buttons.push(new DButton('0_desc', 'Call Primary', 'Call Primary Number.'));
+        this.buttons.push(new DButton('1_desc', 'Call Alternate', 'Call Alternate Number.'));
+        this.buttons.push(new DButton('2_desc', 'Text Primary', 'Text Primary Number.'));
+        this.buttons.push(new DButton('3_desc', 'Text Alternate', 'Text Alternate Number.'));
+        this.buttons.push(new DButton('4_desc', 'Email', 'Email the customer.'));
+        this.buttons.push(new DButton('5_desc', 'Will Return', 'Customer will return for the device.'));
+    },
     printButtons : function() {
         var bar_row = 4;
         var len = this.buttons.length;
@@ -269,9 +278,6 @@ function nextWindow(number) {
         second_title = "Accessories:";
         text = "What accessories are being checked in with the device?";
         pc = removeal(element.value);
-        if (element.value.includes("Pattern[")) {
-            pc += ']';
-        }
     } else if (number == 2) {
         second_title = "Prefered Contact Method:";
         text = "How should the customer be updated about their repair?"
@@ -301,7 +307,10 @@ function nextWindow(number) {
         findElement('#update_prompt').innerText = text;
         element.value = "";
         findElement('#add_loc').innerHTML = '';
-        if (number == 4) {
+        if (number == 2) {
+            DButTable.makeContactButtons();
+            DButTable.printButtons();
+        } else if (number == 4) {
             DButTable.makeButtons();
             DButTable.printButtons();
         } else if (number == 5) {
