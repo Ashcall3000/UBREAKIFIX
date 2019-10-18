@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.9.3
+// @version      1.3.9.4
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -90,6 +90,7 @@ var passfield = false;
             pcm = "";
             cond = "";
             desc = "";
+            DButTable.printed = false;
         }
     }, 1000);
 })
@@ -212,6 +213,7 @@ function deleteBox(css) {
 
 var DButTable = {
     buttons : [],
+    printed : false,
     makeButtons : function() {
         this.buttons = [];
         this.buttons.push(new DButton('0_desc', 'Water Damage', '| Due to the unpredictable nature of water damage, we are not responsible for any loss of functionalities. |'));
@@ -223,12 +225,19 @@ var DButTable = {
     },
     makeContactButtons : function() {
         this.buttons = [];
-        this.buttons.push(new DButton('0_desc', 'Call Primary', 'Call Primary Number.'));
-        this.buttons.push(new DButton('1_desc', 'Call Alternate', 'Call Alternate Number.'));
-        this.buttons.push(new DButton('2_desc', 'Text Primary', 'Text Primary Number.'));
-        this.buttons.push(new DButton('3_desc', 'Text Alternate', 'Text Alternate Number.'));
-        this.buttons.push(new DButton('4_desc', 'Email', 'Email the customer.'));
-        this.buttons.push(new DButton('5_desc', 'Will Return', 'Customer will return for the device.'));
+        this.buttons.push(new DButton('0_desc', 'Call Primary', ' Call Primary Number.'));
+        this.buttons.push(new DButton('1_desc', 'Call Alternate', ' Call Alternate Number.'));
+        this.buttons.push(new DButton('2_desc', 'Text Primary', ' Text Primary Number.'));
+        this.buttons.push(new DButton('3_desc', 'Text Alternate', ' Text Alternate Number.'));
+        this.buttons.push(new DButton('4_desc', 'Email', ' Email the customer.'));
+        this.buttons.push(new DButton('5_desc', 'Will Return', ' Customer will return for the device.'));
+    },
+    makeAccButtons : function() {
+        this.buttons = [];
+        this.buttons.push(new DButton('0_desc', 'Sim Card', 'Sim Card. '));
+        this.buttons.push(new DButton('1_desc', 'Case', 'Case. '));
+        this.buttons.push(new DButton('2_desc', 'Charge Cord', 'Charging Cord. '));
+        this.buttons.push(new DButton('3_desc', 'S-Pen', 'S-Pen. '));
     },
     printButtons : function() {
         var bar_row = 4;
@@ -249,13 +258,16 @@ var DButTable = {
             text += '</button>';
         }
         addHTML('#add_loc', text);
-        findElement('#add_loc').addEventListener('click', function(e) {
-            console.log(e.target.id);
-            var id = (e.target.id.includes('desc')) ? e.target.id.charAt(0) : '';
-            if (!document.querySelector('#update_info').value.includes(DButTable.buttons[id]) && id != '') {
-                document.querySelector('#update_info').value += DButTable.buttons[id].text;
-            }
-        });
+        if (!this.printed) {
+            findElement('#add_loc').addEventListener('click', function(e) {
+                console.log(e.target.id);
+                var id = (e.target.id.includes('desc')) ? e.target.id.charAt(0) : '';
+                if (!document.querySelector('#update_info').value.includes(DButTable.buttons[id]) && id != '') {
+                    document.querySelector('#update_info').value += DButTable.buttons[id].text;
+                }
+            });
+            this.printed = true;
+        }
     }
 };
 
@@ -307,7 +319,10 @@ function nextWindow(number) {
         findElement('#update_prompt').innerText = text;
         element.value = "";
         findElement('#add_loc').innerHTML = '';
-        if (number == 2) {
+        if (number == 1) {
+            DButTable.makeAccButtons();
+            DButTable.printButtons();
+        } else if (number == 2) {
             DButTable.makeContactButtons();
             DButTable.printButtons();
         } else if (number == 4) {
@@ -345,6 +360,7 @@ function cancelBox() {
     }
     deleteBox('#backdrop');
     deleteBox('#update_box');
+    TButTable.printed = false;
 }
 
 function removeal(text) {
