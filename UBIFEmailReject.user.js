@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Email Reject
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Adds a button to add dummy email.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -28,7 +28,5 @@
 })();
 
 function addText() {
-    console.log("EMAIL REJECTED");
-    addHTML('#reject', 'REJECTED');
     setField('#customer-email', 'input', 'decline@customer.com');
 }
