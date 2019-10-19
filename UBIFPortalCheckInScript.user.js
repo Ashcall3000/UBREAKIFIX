@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Check-In Script
 // @namespace    http://tampermonkey.net/
-// @version      1.3.9.4
+// @version      1.3.9.5
 // @description  Prompts user for information to format into the condition notes.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -360,7 +360,7 @@ function cancelBox() {
     }
     deleteBox('#backdrop');
     deleteBox('#update_box');
-    TButTable.printed = false;
+    DButTable.printed = false;
 }
 
 function removeal(text) {
