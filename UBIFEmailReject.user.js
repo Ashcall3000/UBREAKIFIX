@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Email Reject
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Adds a button to add dummy email.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -16,6 +16,7 @@
     'use strict';
 
     var created = true;
+    var aCreated = true;
     var run = setInterval(function() {
         if (checkElement("#customer-email") && created) {
             addHTML('#email label', '<button id="reject" class="btn btn-cancel push-left fastclickable">Reject</button>');
@@ -24,9 +25,23 @@
         } else if (!checkElement("#customer-email") && !created) {
             created = true;
         }
+        if (checkElement("#customer-address-line-1") && created) {
+            addHTML('#address_line_1 label', '<button id="declined" class="btn btn-cancel push-left fastclickable">Declined</button>');
+            findElement('#declined').addEventListener('click', addAddText);
+            aCreated = false;
+        } else if (!checkElement('#customer-address-line-1') && !created) {
+            created = true;
+        }
     }, 1000); // Runs every second.
 })();
 
 function addText() {
     setField('#customer-email', 'input', 'decline@customer.com');
+}
+
+function addAddText() {
+    setField('#customer-addresss-line-1', 'input', '*');
+    setField('#customer-city', 'input', '*');
+    setField('#customer-state', 'input', '*');
+    setField('#customer-zip', 'input', '*');
 }
