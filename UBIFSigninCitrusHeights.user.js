@@ -1,15 +1,15 @@
 // ==UserScript==
 // @name         UBIF Sign-in Citrus Heights
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Creates buttons on the sign in popup to select which user you are.
 // @author       Christopher Sullivan
 // @include        https://portal.ubif.net/*
 // ==/UserScript==
 
 
-var names = ['Christopher', 'Dillon', 'Michael'];
-var passcodes = ['693769', '327090', '323140'];
+var names = ['Christopher', 'Dillon', 'Michael', 'John'];
+var passcodes = ['693769', '327090', '323140', '887905'];
 
 (function() {
     'use strict';
