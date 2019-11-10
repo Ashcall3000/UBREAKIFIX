@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
+// @version      1.2.3
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -17,6 +17,7 @@
 
     var ran = false;
     var status = null;
+    var user_set = false;
     var start = setInterval(function() {
         if (checkURL("https://portal.ubif.net/pos/checkout-new/") && checkElement(".editor-add-in")) {
             if (!ran) {
@@ -56,9 +57,17 @@
                             break;
                         case "Diag in Progress":
                             setText("none", "Currently diagnosing the device to give customer a repair quote.");
+                            if (!user_set) {
+                                findElement('#custom-tabset > div.panel-body > div > div.tab-pane.active > div:nth-child(1) > sales-text-editor-buttons > div > div.right-buttons > button').addEventListener('click', setUser);
+                                user_set = true;
+                            }
                             break;
                         case "Repair in Progress":
                             setText("none", "The device is currently being repaired.");
+                            if (!user_set) {
+                                findElement('#custom-tabset > div.panel-body > div > div.tab-pane.active > div:nth-child(1) > sales-text-editor-buttons > div > div.right-buttons > button').addEventListener('click', setUser);
+                                user_set = true;
+                            }
                             break;
                         case "Repaired - RFP":
                             setText("none", "The device is repaired and ready for pickup.");
@@ -97,11 +106,29 @@
                 findElement(".placeholder-text").setAttribute("placeholder", "");
             } else if (findElement(".placeholder-text").innerText == "\n") {
                 ran = false;
+                user_set = false;
             }
             //"select.form-control:nth-child(1)"
         }
     }, 250); // Checks every 1/4 seconds.
 })();
+
+const sleep = (milliseconds) => {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
+function setUser() {
+    var name = '\n' + findElement('.user-hold').innerText;
+    console.log(name);
+    eventFire('#wrap > div > div.portal-pos.with-sidebar > div > div > workorder-tab-list > div > div > div.tab-pane.active > div:nth-child(1) > div.col-xs-12.col-lg-6.customer-info > customer-info-only-card > div > div.card-title > workorder-actions > div > div.dropdown.small > ul > li:nth-child(4) > a', 'click');
+    sleep(250).then(() => {
+        console.log(findElements('body > div.modal.fade.fastclickable.portal-base.assign-tech-modal.in > div > div > div.modal-body.max-500 > div > table > tbody > tr'));
+        eventFire("body > div.modal.fade.fastclickable.portal-base.assign-tech-modal.in > div > div > div.modal-body.max-500 > div > table > tbody > tr", 'click', name);
+    })
+    sleep(500).then(() => {
+        eventFire('body > div.modal.fade.fastclickable.portal-base.assign-tech-modal.in > div > div > div.modal-header > h3 > button', 'click');
+    })
+}
 
 function setText(disp, text) {
     findElement(".note-placeholder").style = "display: " + disp + ";";
