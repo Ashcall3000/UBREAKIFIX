@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Portal Auto Fill Script
 // @namespace    http://tampermonkey.net/
-// @version      1.2.3
+// @version      1.2.4
 // @description  Auto fills update notes to expidite the procedure.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -34,8 +34,8 @@
                         }
                     });
                     switch (val) {
-                        case "Awaiting Approval":
-                            setText("none", "Device has been repaired and passed tests.");
+                        case "Quality Inspection":
+                            setText("none", "Device has been repaired and is going through a quality inspection.");
                             break;
                         case "Awaiting Callback":
                             setText("none", "Awaiting callback from the customer.");
