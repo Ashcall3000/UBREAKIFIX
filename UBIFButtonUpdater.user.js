@@ -51,7 +51,7 @@ function getSwitchText(status) {
     var check = checkSamsungOrGoogle();
     var gspn = true;
     if (check == 1) {
-        if (checkElement('#portal-alert-bar > div > div > span > button') && findElement("#portal-alert-bar > div > div > span > button").textContent.includes("GSPN")) {
+        if (findElementByText('button', 'GSPN')) {
             gspn = false;
         }
     }
@@ -59,13 +59,13 @@ function getSwitchText(status) {
         return "Diag in Progress";
     } else if (status == "Awaiting Repair") {
         if (check == 1 && !gspn) {
-            return "Please Create GSPN";
+            return "Auto Create GSPN";
         }
         return "Repair in Progress";
     } else if (status == "Diag in Progress") {
         return "Repair in Progress";
     } else if (status == "Repair in Progress") {
-        if (check == 1 || check == 2) {
+        if (check == 1 || check == 2 || check == 3) {
             return "Quality Inspection";
         } else {
             return "Repaired - RFP";
@@ -78,13 +78,13 @@ function getSwitchText(status) {
 }
 
 function checkSamsungOrGoogle() {
-    var samsung = '#wrap > div > div.portal-pos.with-sidebar > div > div > workorder-tab-list > div > div > div.tab-pane.active > div.row.bg-white.sale-items.with-shadow > div > div.card-title.partner-wo.showing-warnings > div.partner-hold > div';
     var google = '#portal-alert-bar > div > div.alert.portal-alert.alert-danger > span > button';
-    if (checkElement(samsung) && findElement(samsung).textContent.includes("Samsung")) {
-        console.log("Samsung");
+    if (findElementByText('div.partner-hold', 'SAMSUNG')) {
         return 1;
     } else if (checkElement(google) && findElement(google).textContent.includes("Diag App")) {
         return 2;
+    } else if (findElementByText('div.partner-hold', 'ASURION')) {
+        return 3;
     } else {
         console.log("Not Google or Samsung");
         return 0;
@@ -95,7 +95,7 @@ function setButtonText() {
     var el = findElement("#auto_note_button");
     var current_status = findElement('#wrap > div > div.portal-pos.with-sidebar > div > div > workorder-tab-list > div > ul > li.active > a > tab-heading > div > div:nth-child(4) > span').textContent;
     el.textContent = getSwitchText(current_status);
-    if (el.textContent == "Not Available" || el.textContent == "Please Create GSPN") {
+    if (el.textContent == "Not Available") {
         el.disabled = true;
     } else {
         el.disabled = false;
@@ -105,7 +105,26 @@ function setButtonText() {
 function autoUpdate() {
     var current_status = findElement('#wrap > div > div.portal-pos.with-sidebar > div > div > workorder-tab-list > div > ul > li.active > a > tab-heading > div > div:nth-child(4) > span').textContent;
     var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
-    eventFire(note_button, 'click');
+    if (findElement('#auto_note_button').textContent.includes('GSPN')) {
+        eventFire('button', 'click', 'GSPN');
+        console.log('Clicked GSPN');
+        while (!findElementByText('.modal-dialog button', 'Create Repair Ticket')) {
+            // Pausing
+        }
+        eventFire('.modal-dialog button', 'click', 'Create Repair Ticket');
+        console.log('Ticket Generated');
+        while (!findElementByText('.modal-dialog button', 'Close')) {
+            // Pausing
+        }
+        eventFire('.modal-dialog button', 'click', 'Close');
+        console.log('Dialog Closed');
+        while (checkElement(note_button)) {
+            // Pausing
+        }
+        eventFire(note_button, 'click');
+    } else {
+        eventFire(note_button, 'click');
+    }
     sleep(250).then(() => {
         var text = getSwitchText(current_status);
         var els = findElements("div.extra-actions > select > option");
@@ -118,7 +137,7 @@ function autoUpdate() {
         }
         angular.element('div.extra-actions > select').triggerHandler('change');
     })
-    sleep(2000).then(() => {
+    sleep(800).then(() => {
         eventFire('#custom-tabset > div.panel-body > div > div.tab-pane.active > div:nth-child(1) > sales-text-editor-buttons > div.buttons-hold.clearfix > div.right-buttons > button', 'click');
     })
     setButtonText();
