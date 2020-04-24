@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Button Updater
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Adds a button to assign the workorder to the current user.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -108,20 +108,26 @@ function autoUpdate() {
     if (findElement('#auto_note_button').textContent.includes('GSPN')) {
         eventFire('button', 'click', 'GSPN');
         console.log('Clicked GSPN');
-        while (!findElementByText('.modal-dialog button', 'Create Repair Ticket')) {
-            // Pausing
-        }
-        eventFire('.modal-dialog button', 'click', 'Create Repair Ticket');
-        console.log('Ticket Generated');
-        while (!findElementByText('.modal-dialog button', 'Close')) {
-            // Pausing
-        }
-        eventFire('.modal-dialog button', 'click', 'Close');
-        console.log('Dialog Closed');
-        while (checkElement(note_button)) {
-            // Pausing
-        }
-        eventFire(note_button, 'click');
+        var create_repair_ticket = setInterval(function() {
+            if (findElementByText('.modal-dialog button', 'Create Repair Ticket')) {
+                eventFire('.modal-dialog button', 'click', 'Create Repair Ticket');
+                clearInterval(create_repair_ticket);
+            }
+        }, 250);
+        var close_ticket_window = setInterval(function() {
+            if (findElementByText('.modal-dialog button', 'Close')) {
+                eventFire('.modal-dialog button', 'click', 'Close');
+                clearInterval(close_ticket_window);
+            }
+        }, 250);
+        do {
+            var note_button_interval = setInterval(function() {
+                if (checkElement(note_button)) {
+                    eventFire(note_button, 'click');
+                    clearInterval(note_button_interval);
+                }
+            }, 250);
+        } while (!checkElement('#paneled-side-bar.closed'));
     } else {
         eventFire(note_button, 'click');
     }
