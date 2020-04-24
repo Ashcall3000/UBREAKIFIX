@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Button Updater
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Adds a button to assign the workorder to the current user.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -122,7 +122,7 @@ function autoUpdate() {
         }, 250);
         do {
             var note_button_interval = setInterval(function() {
-                if (checkElement(note_button)) {
+                if (checkElement(note_button) && !checkElement('body > div.modal.fade.fastclickable.portal-base.repair-ticket-create.in > div > div > div.modal-body')) {
                     eventFire(note_button, 'click');
                     clearInterval(note_button_interval);
                 }
