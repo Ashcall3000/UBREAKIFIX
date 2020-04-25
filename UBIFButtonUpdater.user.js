@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Button Updater
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Adds a button to assign the workorder to the current user.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -106,6 +106,7 @@ function autoUpdate() {
     var current_status = findElement('#wrap > div > div.portal-pos.with-sidebar > div > div > workorder-tab-list > div > ul > li.active > a > tab-heading > div > div:nth-child(4) > span').textContent;
     var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
     var gspn_div = 'body > div.modal.fade.fastclickable.portal-base.repair-ticket-create.in > div > div > div.modal-body';
+    var running = false;
     if (findElement('#auto_note_button').textContent.includes('GSPN')) {
         eventFire('button', 'click', 'GSPN');
         console.log('Clicked GSPN');
@@ -131,7 +132,10 @@ function autoUpdate() {
         eventFire(note_button, 'click');
     }
     var status_change_interval = setInterval(function() {
-        if (!checkElement(gspn_ticket) && !checkElement('#paneled-side-bar.closed')) {
+        console.log('Status change interval');
+        if (!checkElement(gspn_div) && !checkElement('#paneled-side-bar.closed') && !running) {
+            console.log('IF statement for status change interval');
+            running = true;
             sleep(250).then(() => {
                 var text = getSwitchText(current_status);
                 var els = findElements("div.extra-actions > select > option");
@@ -148,6 +152,7 @@ function autoUpdate() {
                 eventFire('#custom-tabset > div.panel-body > div > div.tab-pane.active > div:nth-child(1) > sales-text-editor-buttons > div.buttons-hold.clearfix > div.right-buttons > button', 'click');
             })
             setButtonText();
+            running = false;
             clearInterval(status_change_interval);
         }
     }, 500);
