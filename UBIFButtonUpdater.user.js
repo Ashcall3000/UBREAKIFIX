@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Button Updater
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Adds a button to assign the workorder to the current user.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -105,6 +105,7 @@ function setButtonText() {
 function autoUpdate() {
     var current_status = findElement('#wrap > div > div.portal-pos.with-sidebar > div > div > workorder-tab-list > div > ul > li.active > a > tab-heading > div > div:nth-child(4) > span').textContent;
     var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
+    var gspn_div = 'body > div.modal.fade.fastclickable.portal-base.repair-ticket-create.in > div > div > div.modal-body';
     if (findElement('#auto_note_button').textContent.includes('GSPN')) {
         eventFire('button', 'click', 'GSPN');
         console.log('Clicked GSPN');
@@ -120,33 +121,36 @@ function autoUpdate() {
                 clearInterval(close_ticket_window);
             }
         }, 250);
-        do {
-            var note_button_interval = setInterval(function() {
-                if (checkElement(note_button) && !checkElement('body > div.modal.fade.fastclickable.portal-base.repair-ticket-create.in > div > div > div.modal-body')) {
-                    eventFire(note_button, 'click');
-                    clearInterval(note_button_interval);
-                }
-            }, 250);
-        } while (!checkElement('#paneled-side-bar.closed'));
+        var note_button_interval = setInterval(function() {
+            if (checkElement(note_button) && !checkElement(gspn_div)) {
+                eventFire(note_button, 'click');
+                clearInterval(note_button_interval);
+            }
+        }, 250);
     } else {
         eventFire(note_button, 'click');
     }
-    sleep(250).then(() => {
-        var text = getSwitchText(current_status);
-        var els = findElements("div.extra-actions > select > option");
-        var to_select = 0;
-        for ( ; to_select < els.length; to_select++) {
-            if (els[to_select].textContent == text) {
-                findElement("div.extra-actions > select").value = to_select;
-                break;
-            }
+    var status_change_interval = setInterval(function() {
+        if (!checkElement(gspn_ticket) && !checkElement('#paneled-side-bar.closed')) {
+            sleep(250).then(() => {
+                var text = getSwitchText(current_status);
+                var els = findElements("div.extra-actions > select > option");
+                var to_select = 0;
+                for ( ; to_select < els.length; to_select++) {
+                    if (els[to_select].textContent == text) {
+                        findElement("div.extra-actions > select").value = to_select;
+                        break;
+                    }
+                }
+                angular.element('div.extra-actions > select').triggerHandler('change');
+            })
+            sleep(800).then(() => {
+                eventFire('#custom-tabset > div.panel-body > div > div.tab-pane.active > div:nth-child(1) > sales-text-editor-buttons > div.buttons-hold.clearfix > div.right-buttons > button', 'click');
+            })
+            setButtonText();
+            clearInterval(status_change_interval);
         }
-        angular.element('div.extra-actions > select').triggerHandler('change');
-    })
-    sleep(800).then(() => {
-        eventFire('#custom-tabset > div.panel-body > div > div.tab-pane.active > div:nth-child(1) > sales-text-editor-buttons > div.buttons-hold.clearfix > div.right-buttons > button', 'click');
-    })
-    setButtonText();
+    }, 500);
 }
 
 function makeElement(loc, tag, id='', el_class='', text='') {
