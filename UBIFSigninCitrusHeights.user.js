@@ -8,8 +8,8 @@
 // ==/UserScript==
 
 
-var names = ['Christopher', 'Dillon', 'Michael', 'John', 'Chasity'];
-var passcodes = ['693769', '327090', '323140', '887905', '802599'];
+var names = ['Christopher', 'Dillon', 'Michael', 'John', 'Chasity', 'Dennis', 'Kyle'];
+var passcodes = ['693769', '327090', '323140', '887905', '802599', '', ''];
 
 (function() {
     'use strict';
