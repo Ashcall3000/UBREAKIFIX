@@ -42,8 +42,8 @@ function updateData() {
     } else { // Button doesn't exist
         part_button = null;
     }
-    var item = findByAttribute("td", "ng-if", "isLeadReserveOrNoReserve() || isReturn()", "", "", find("#old-table")).innerText;
-    var sku = findByAttribute("td", "ng-click", "editSaleItem(saleItem, true)", "", "", find("#old-table")).innerText;
+    var sku = findByAttribute("td", "ng-if", "isLeadReserveOrNoReserve() || isReturn()", "", "", find("#old-table")).innerText;
+    var item = findByAttribute("td", "ng-click", "editSaleItem(saleItem, true)", "", "", find("#old-table")).innerText;
     var serial = findByAttribute("td", "ng-if", "!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)", "", "", find("#old-table"));
     if (serial != null) {
         serial = serial.innerText.substring(6);
