@@ -1,11 +1,10 @@
 // ==UserScript==
 // @name         UBIF RT Leads
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Creates a user interface more readable for mobile devices.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
-// @include      https://ubifsupport.zendesk.com/hc/en-us/requests/new*
 // @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/SearchElements.js
 // @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFRTLeads.user.js
 // @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/UBIFRTLeads.user.js
@@ -13,22 +12,70 @@
 // @grant        none
 // ==/UserScript==
 var part_button = null;
+var device_type = "";
+var imei = "";
 (function() {
     var leads_check_run = setInterval(function() {
+        // Runs on the lead itself
         if (checkURL("https://portal.ubif.net/pos/aqleads/edit/")) {
             // Runs Program
             // We hide the original table
             if (!checkExist("#mobile-table")) {
-                find("div.table-hold").setAttribute("hidden", "");
-                find("div.table-hold").id = "old-table";
-                createTable();
+                if (checkExist('div.table-hold')) {
+                    find("div.table-hold").setAttribute("hidden", "");
+                    find("div.table-hold").id = "old-table";
+                    createTable();
+                }
                 updateData();
             } else {
                 updateData();
             }
+        // If we are the device select page from a lead.
+        } else if (checkURL("https://portal.ubif.net/pos/device-type-select/lead/")) {
+            if (!findByText('button', 'Create Work Order')) {
+                // Filling out the IMEI
+                if (imei != "" && imei.length == 15) {
+                    if (findByAttribute('input', 'ng-model', 'deviceData.imei')) {
+                        setField(findByAttribute('input', 'ng-model', 'deviceData.imei'), 'input', imei);
+                    }
+                }
+                // If device isn't already selected.
+                if (!checkExist('div.device-type-sub-hold') && device_type != "") {
+                    setField('#device-type-searchbox', 'input', device_type);
+                    sleep(250).then(() => {
+                        findByText('a', device_type + 'Repair').click();
+                    });
+                }
+                clickContinue("Continue");
+            } else {
+                if (findByText('button', 'CHECK ALL')) {
+                    findByText('button', 'CHECK ALL').click();
+                    findByText('button', 'CHECK ALL').click();
+                    clickContinue('Create Work Order');
+                    resetVariables();
+                }
+            }
         }
     }, 1000);
 })();
+
+function resetVariables() {
+    part_button = null;
+    device_type = "";
+    imei = "";
+}
+
+function clickContinue(text) {
+    var click_continue = setInterval(function() {
+        console.log("Trying to Click");
+        if (findByText('button', text)) {
+            if (!findByAttribute('button', 'disabled', 'disabled', "", text)) {
+                clearInterval(click_continue);
+                findByText('button', text).click();
+            }
+        }
+    }, 500);
+}
 
 function updateData() {
     // Moves the remove part button to new spot.
@@ -42,17 +89,34 @@ function updateData() {
     } else { // Button doesn't exist
         part_button = null;
     }
-    var sku = findByAttribute("td", "ng-if", "isLeadReserveOrNoReserve() || isReturn()", "", "", find("#old-table")).innerText;
-    var item = findByAttribute("td", "ng-click", "editSaleItem(saleItem, true)", "", "", find("#old-table")).innerText;
+    // Grabbing the imei
+    if (findByText('div.device-detial', 'IMEI')) {
+        imei = find('div.details', findByText('div.device-detial', 'IMEI').innerText);
+    }
+    var sku = findByAttribute("td", "ng-if", "isLeadReserveOrNoReserve() || isReturn()", "", "", find("#old-table"));
+    if (sku != null) {
+        sku = sku.innerText;
+    }
+    var item = findByAttribute("td", "ng-click", "editSaleItem(saleItem, true)", "", "", find("#old-table"));
+    if (item != null) {
+        item = item.innerText;
+        var end = item.indexOf('Glass');
+        device_type = item.substring(0, end);
+    }
     var serial = findByAttribute("td", "ng-if", "!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)", "", "", find("#old-table"));
-    if (serial != null) {
+    if (serial) {
         serial = serial.innerText.substring(6);
         find("#serial-data").innerText = serial;
     }
-    var amount = findByAttribute("span", "ng-if", "!saleItem.inventory.store_item.item.is_service", "", "", find("#old-table")).innerText;
-    find("#item-data").innerText = item;
-    find("#sku-data").innerText = sku;
-    find("#available-data").innerText = amount;
+    var amount = findByAttribute("span", "ng-if", "!saleItem.inventory.store_item.item.is_service", "", "", find("#old-table"));
+    if (amount != null) {
+        amount = amount.innerText;
+    }
+    if (checkExist("#mobile-table")) {
+        find("#item-data").innerText = item;
+        find("#sku-data").innerText = sku;
+        find("#available-data").innerText = amount;
+    }
 }
 
 function createTable() {
