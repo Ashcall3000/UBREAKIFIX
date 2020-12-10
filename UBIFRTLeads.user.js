@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF RT Leads
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Creates a user interface more readable for mobile devices.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -11,8 +11,6 @@
 // @run-at document-idle
 // @grant        none
 // ==/UserScript==
-var part_button = null;
-var device_type = "";
 var imei = "";
 (function() {
     var leads_check_run = setInterval(function() {
@@ -34,35 +32,46 @@ var imei = "";
         } else if (checkURL("https://portal.ubif.net/pos/device-type-select/lead/")) {
             if (!findByText('button', 'Create Work Order')) {
                 // Filling out the IMEI
-                if (imei != "" && imei.length == 15) {
+                if (getData("imei") != "" && getData("imei").length == 15) {
                     if (findByAttribute('input', 'ng-model', 'deviceData.imei')) {
-                        setField(findByAttribute('input', 'ng-model', 'deviceData.imei'), 'input', imei);
+                        setField(findByAttribute('input', 'ng-model', 'deviceData.imei'), 'input', getData("imei"));
                     }
                 }
                 // If device isn't already selected.
-                if (!checkExist('div.device-type-sub-hold') && device_type != "") {
-                    setField('#device-type-searchbox', 'input', device_type);
-                    sleep(250).then(() => {
-                        findByText('a', device_type + 'Repair').click();
+                if (!checkExist('div.selected') && getData("device-type") != "") {
+                    setField('#device-type-searchbox', 'input', getData("device-type") + 'Repair');
+                    sleep(1000).then(() => {
+                        findByText('a', getData("device-type") + 'Repair').click();
                     });
                 }
                 clickContinue("Continue");
             } else {
+                if (findByText('button', 'Cancel')) {
+                    findByText('button', 'Cancel').click();
+                }
                 if (findByText('button', 'CHECK ALL')) {
                     findByText('button', 'CHECK ALL').click();
                     findByText('button', 'CHECK ALL').click();
                     clickContinue('Create Work Order');
-                    resetVariables();
+                    //resetVariables();
                 }
             }
         }
     }, 1000);
 })();
 
+function getData(key) {
+    return window.localStorage.getItem([name]);
+}
+
+function setData(key, item) {
+    window.localStorage.setItem(key, item);
+}
+
 function resetVariables() {
-    part_button = null;
-    device_type = "";
-    imei = "";
+    setData("part-button", null);
+    setData("device-type", "");
+    setData("imei", "");
 }
 
 function clickContinue(text) {
@@ -80,18 +89,18 @@ function clickContinue(text) {
 function updateData() {
     // Moves the remove part button to new spot.
     if (checkExist("div.action-buttons")) { // Checks if button exists
-        if (part_button === null) { // Checks if Variable has value ie has been moved.
-            part_button = find("div.action-buttons");
-            find("#remove-part-td").appendChild(part_button);
-            find("button", part_button).appendChild(document.createTextNode("*** Remove Part"));
-            replaceClass(find("button", part_button), "icon-only", "left-icon");
+        if (getData("part-button") === null) { // Checks if Variable has value ie has been moved.
+            setData("part-button", find("div.action-buttons"));
+            find("#remove-part-td").appendChild(getData("part-button"));
+            find("button", getData("part-button")).appendChild(document.createTextNode("Remove Part"));
+            replaceClass(find("button", getData("part-button")), "icon-only", "left-icon");
         }
     } else { // Button doesn't exist
-        part_button = null;
+        setData("part-button", null);
     }
     // Grabbing the imei
     if (findByText('div.device-detial', 'IMEI')) {
-        imei = find('div.details', findByText('div.device-detial', 'IMEI').innerText);
+        setData("imei", find('div.details', findByText('div.device-detial', 'IMEI').innerText));
     }
     var sku = findByAttribute("td", "ng-if", "isLeadReserveOrNoReserve() || isReturn()", "", "", find("#old-table"));
     if (sku != null) {
@@ -100,8 +109,7 @@ function updateData() {
     var item = findByAttribute("td", "ng-click", "editSaleItem(saleItem, true)", "", "", find("#old-table"));
     if (item != null) {
         item = item.innerText;
-        var end = item.indexOf('Glass');
-        device_type = item.substring(0, end);
+        setData("device-type", getDeviceName(item));
     }
     var serial = findByAttribute("td", "ng-if", "!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)", "", "", find("#old-table"));
     if (serial) {
@@ -162,4 +170,17 @@ function createTable() {
     // Remove Part Data Row
     tr = createTagAppend(main_table, "tr", "", "");
     createTag(tr, "td", "remove-part-td", "center-data");
+}
+
+function getDeviceName(text) {
+    var end = text.indexOf('Glass');
+    text = text.substring(0, end);
+    if (text.includes('iPhone')) {
+        return text;
+    } else if (text.includes('Samsung')) {
+        if (text.includes('S10 Plus')) {
+            return "Samsung Galaxy S10 Plus ";
+        }
+        return text;
+    }
 }
