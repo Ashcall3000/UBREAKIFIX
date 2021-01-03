@@ -34,7 +34,10 @@ var workorder_ran = RAN_WAITING;
         }
         // Runs on Continue page
         if (checkURL('https://portal.ubif.net/pos/device-repair-select/') && create_workorder_ran == RAN_WAITING) {
-            create_workorder_ran = createWorkOrderPage();;
+            create_workorder_ran = createWorkOrderPage();
+            imei = '';
+            device_type = '';
+            part_button = null;
         } else {
             create_workorder_ran = RAN_WAITING;
         }
@@ -71,8 +74,8 @@ var iphone_list = [
     'iPhone 7 Plus',
     'iPhone 6S',
     'iPhone 6S Plus',
-    'iPhone 6'
-    'iPhone 6 Plus',
+    'iPhone 6',
+    'iPhone 6 Plus'
 ];
 // List of Samsung Galaxy Device Names
 var samsung_list = [
@@ -105,8 +108,8 @@ var samsung_list = [
     'Samsung Galaxy A21',
     'Samsung Galaxy A20',
     'Samsung Galaxy A11',
-    'Samsung Galaxy A10'
-    'Samsung Galaxy A10e',
+    'Samsung Galaxy A10',
+    'Samsung Galaxy A10e'
 
 ];
 
@@ -117,7 +120,7 @@ var device_type = '';
 
 function leadPage() {
     // Hide the original table
-    if (!checkExist('#mobile-table') && !findByText('button', 'Dismiss')) { // Checks to see if we created new table yet
+    if (!checkExist('#mobile-table') && !findByText('span', 'Dismiss')) { // Checks to see if we created new table yet
         if (checkExist('div.table-hold')) {
             find('div.table-hold').setAttribute('hidden', '');
             find('div.table-hold').id = 'old-table';
@@ -191,7 +194,7 @@ function updateLeadTable() {
     }
     // Grabbing the imei
     if (findByText('div.device-detail', 'IMEI')) {
-        imei = find('div.details', findByText('div.device-detail', 'IMEI')).innerText);
+        imei = find('div.details', findByText('div.device-detail', 'IMEI')).innerText;
     }
     var sku = findByAttribute('td', 'ng-if', 'isLeadReserveOrNoReserve() || isReturn()', '', '', find('#old-table'));
     if (sku != null) {
@@ -202,9 +205,9 @@ function updateLeadTable() {
     if (item != null) {
         item = item.innerText;
         if (device_name == '') {
-            device_type = getDeviceName(item));
+            device_type = getDeviceName(item);
         } else {
-            device_type = device_name);
+            device_type = device_name;
         }
     }
     var serial = findByAttribute('td', 'ng-if', '!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)', '', '', find('#old-table'));
