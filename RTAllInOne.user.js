@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -53,51 +53,51 @@ var workorder_ran = RAN_WAITING;
 */
 // List of iPhone Device Names
 var iphone_list = [
-    "iPhone 12 Pro Max",
-    "iPhone 12 Pro",
     'iPhone 12',
+    'iPhone 12 Pro',
     'iPhone 12 Mini',
+    'iPhone 12 Pro Max',
     'iPhone SE (2nd Gen)',
-    'iPhone 11 Pro Max',
-    'iPhone 11 Pro',
     'iPhone 11',
+    'iPhone 11 Pro',
+    'iPhone 11 Pro Max',
     'iPhone XS Max',
     'iPhone XS',
     'iPhone XR',
     'iPhone X',
-    'iPhone 8 Plus',
     'iPhone 8',
-    'iPhone 7 Plus',
+    'iPhone 8 Plus',
     'iPhone 7',
-    'iPhone 6S Plus',
+    'iPhone 7 Plus',
     'iPhone 6S',
-    'iPhone 6 Plus',
+    'iPhone 6S Plus',
     'iPhone 6'
+    'iPhone 6 Plus',
 ];
 // List of Samsung Galaxy Device Names
 var samsung_list = [
-    'Samsung Galaxy Note 20 Ultra',
     'Samsung Galaxy Note 20',
-    'Samsung Galaxy Note 10 Plus',
+    'Samsung Galaxy Note 20 Ultra',
     'Samsung Galaxy Note 10',
+    'Samsung Galaxy Note 10 Plus',
     'Samsung Galaxy Note 9',
     'Samsung Galaxy Note 8',
+    'Samsung Galaxy S20',
     'Samsung Galaxy S20 FE',
     'Samsung Galaxy S20 Ultra',
     'Samsung Galaxy S20 Plus',
     'Samsung Galaxy S20 5G',
-    'Samsung Galaxy S20',
     'Samsung Galaxy S10 Plus',
+    'Samsung Galaxy S10',
     'Samsung Galaxy S10e',
     'Samsung Galaxy S10 Lite',
     'Samsung Galaxy S10 5G',
-    'Samsung Galaxy S10',
-    'Samsung Galaxy S9 Plus',
     'Samsung Galaxy S9',
-    'Samsung Galaxy S8 Plus',
+    'Samsung Galaxy S9 Plus',
     'Samsung Galaxy S8',
-    'Samsung Galaxy S7 Edge',
+    'Samsung Galaxy S8 Plus',
     'Samsung Galaxy S7',
+    'Samsung Galaxy S7 Edge',
     'Samsung Galaxy A71',
     'Samsung Galaxy A70',
     'Samsung Galaxy A51',
@@ -105,17 +105,19 @@ var samsung_list = [
     'Samsung Galaxy A21',
     'Samsung Galaxy A20',
     'Samsung Galaxy A11',
-    'Samsung Galaxy A10e',
     'Samsung Galaxy A10'
+    'Samsung Galaxy A10e',
 
 ];
 
 // Button to remove part
 var part_button = null;
+var imei = '';
+var device_type = '';
 
 function leadPage() {
     // Hide the original table
-    if (!checkExist('#mobile-table')) { // Checks to see if we created new table yet
+    if (!checkExist('#mobile-table') && !findByText('button', 'Dismiss')) { // Checks to see if we created new table yet
         if (checkExist('div.table-hold')) {
             find('div.table-hold').setAttribute('hidden', '');
             find('div.table-hold').id = 'old-table';
@@ -180,7 +182,6 @@ function updateLeadTable() {
         if (part_button === null) { // Checks if Variable has value ie has been moved.
             console.log("running");
             part_button = find('div.action-buttons');
-            //setData('part-button', find('div.action-buttons'));
             find('#remove-part-td').append(part_button);
             find('button', part_button).append(document.createTextNode('Remove Part'));
             replaceClass(find('button', part_button), 'icon-only', 'left-icon');
@@ -190,7 +191,7 @@ function updateLeadTable() {
     }
     // Grabbing the imei
     if (findByText('div.device-detail', 'IMEI')) {
-        setData('imei', find('div.details', findByText('div.device-detail', 'IMEI')).innerText);
+        imei = find('div.details', findByText('div.device-detail', 'IMEI')).innerText);
     }
     var sku = findByAttribute('td', 'ng-if', 'isLeadReserveOrNoReserve() || isReturn()', '', '', find('#old-table'));
     if (sku != null) {
@@ -201,9 +202,9 @@ function updateLeadTable() {
     if (item != null) {
         item = item.innerText;
         if (device_name == '') {
-            setData('device-type', getDeviceName(item));
+            device_type = getDeviceName(item));
         } else {
-            setData('device-type', device_name);
+            device_type = device_name);
         }
     }
     var serial = findByAttribute('td', 'ng-if', '!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)', '', '', find('#old-table'));
@@ -243,17 +244,17 @@ function selectDevicePage() {
     // Checking to see if we can just create the workodrer or not
     if (!findByText('button', 'Continue')) {
         // Checking to see if the device is already selected
-        if (!checkExist('div.selected') && getData('device-type') != '') {
+        if (!checkExist('div.selected') && device_type != '') {
             // Setting input field with device name and repair ie "iPhone 11 Repair"
-            setField('#device-type-searchbox', 'input', getData('device-type') + ' Repair');
+            setField('#device-type-searchbox', 'input', device_type + ' Repair');
             var set_device_step_1 = RAN_WAITING;
             // Setting interval to check every second to if it worked
             var set_device_run_1 = setInterval(function() {
                 // Checks to see if portal says device not found
                 if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') {
                     // Checks to see if device was found
-                    if (findByText('a', getData('device-type') + ' Repair')) {
-                        findByText('a', getData('device-type') + ' Repair').click();
+                    if (findByText('a', device_type + ' Repair')) {
+                        findByText('a', device_type + ' Repair').click();
                         set_device_step_1 = RAN_WORKED;
                         clearInterval(set_device_run_1);
                     }
@@ -261,7 +262,7 @@ function selectDevicePage() {
                     set_device_step_1 = RAN_FAILED;
                     clearInterval(set_device_run_1);
                     // Portal is weird and changes ' Plus' to '+' for the device but not the item name
-                    setField('#device-type-searchbox', 'input', getData('device-type').replace(' Plus', '+'));
+                    setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
                 }
             }, 1000);
             var set_device_step_2 = RAN_WAITING;
@@ -269,10 +270,10 @@ function selectDevicePage() {
                 // Check to see if step one worked or not
                 if (set_device_step_1 == RAN_FAILED) {
                     // Checks to see if portal says device not found
-                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != getData('device-type').replace(' Plus', '+')) {
+                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type.replace(' Plus', '+')) {
                         // check to see if device was found
-                        if (findByText('a', getData('device-type').replace(' Plus', '+'))) {
-                            findByText('a', getData('device_type').replace(' Plus', '+')).click();
+                        if (findByText('a', device_type.replace(' Plus', '+'))) {
+                            findByText('a', device_type.replace(' Plus', '+')).click();
                             set_device_step_2 = RAN_WORKED;
                             clearInterval(set_device_run_2);
                         }
@@ -280,7 +281,7 @@ function selectDevicePage() {
                         set_device_step_2 = RAN_FAILED;
                         clearInterval(set_device_run_2);
                         // Portal is weird and doesn't like the word repair after the device name sometimes
-                        setField('#device-type-searchbox', 'input', getData('device-type'));
+                        setField('#device-type-searchbox', 'input', device_type);
                     }
                 } else if (set_device_step_1 == RAN_WORKED) {
                     clearInterval(set_device_run_2);
@@ -291,10 +292,10 @@ function selectDevicePage() {
                 // Check to see if step 2 worked or not
                 if (set_device_step_2 == RAN_FAILED) {
                     // Checks to see if Portal Says device not found
-                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != getData('device-type')) {
+                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type) {
                         // Checks to see if device was found
-                        if (findByText('a', getData('device-type'))) {
-                            findByText('a', getData('device-type')).click();
+                        if (findByText('a', device_type)) {
+                            findByText('a', device_type).click();
                             set_device_step_3 = RAN_WORKED;
                             clearInterval(set_device_run_3);
                         }
@@ -320,10 +321,10 @@ function selectDevicePage() {
                     // Checking if IMEI field is filled or not
                     if (imei_field.value.length != 15) {
                         // Checking to see if the IMEI  on lead is the full imei
-                        if (getData('imei').length == 15) {
-                            setField(imei_field, 'input', getData('imei'));
+                        if (imei.length == 15) {
+                            setField(imei_field, 'input', imei);
                         } else {
-                            setField(imei_field, 'input', getData('imei') + '0');
+                            setField(imei_field, 'input', imei + '0');
                             var guess = 1;
                             // We start guessing what the last digit is
                             var imei_guess = setInterval(function() {
@@ -331,7 +332,7 @@ function selectDevicePage() {
                                 if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) {
                                     // Checks to see if the Imei is valid or not
                                     if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') {
-                                        setField(imei_field, 'input', getData('imei') + guess.toString());
+                                        setField(imei_field, 'input', imei + guess.toString());
                                         guess += 1;
                                     }
                                 } else if (findByText('button', 'Continue')) {
@@ -352,8 +353,8 @@ function selectDevicePage() {
                 var imei_field = findByAttribute('input', 'ng-model', 'deviceData.imei');
                 // Checks to see if imei and serial are equal or if serial is equal to lead imei
                 if (serial_field.value == imei_field.value ||
-                    serial_field.value == getData('imei') ||
-                    serial_field.value == getData('imei').substring(0, 14)) {
+                    serial_field.value == imei ||
+                    serial_field.value == imei.substring(0, 14)) {
                     // Clear serial field
                     setField(serial_field, 'input', '');
                 }
@@ -451,12 +452,4 @@ function inArray(item, array) {
         }
     }
     return -1;
-}
-
-function getData(key) {
-    return window.localStorage.getItem([key]);
-}
-
-function setData(key, item) {
-    window.localStorage.setItem(key, item);
 }
