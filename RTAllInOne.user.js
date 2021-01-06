@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.1
+// @version      1.0.2
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -119,6 +119,15 @@ var imei = '';
 var device_type = '';
 
 function leadPage() {
+    var close_window = setInterval(function() {
+        if (findByText('span', 'Dismiss')) {
+            findByText('span', 'Dismiss').click();
+            clearInterval(close_window);
+        }
+        if (checkExist('#mobile-table')) {
+            clearInterval(close_window);
+        }
+    }, 250);
     // Hide the original table
     if (!checkExist('#mobile-table') && !findByText('span', 'Dismiss')) { // Checks to see if we created new table yet
         if (checkExist('div.table-hold')) {
@@ -187,7 +196,7 @@ function updateLeadTable() {
             part_button = find('div.action-buttons');
             find('#remove-part-td').append(part_button);
             find('button', part_button).append(document.createTextNode('Remove Part'));
-            replaceClass(find('button', part_button), 'icon-only', 'left-icon');
+            //replaceClass(find('button', part_button), 'icon-only', 'left-icon');
         }
     } else { // Button doesn't exist
         part_button = null;
@@ -199,6 +208,7 @@ function updateLeadTable() {
     var sku = findByAttribute('td', 'ng-if', 'isLeadReserveOrNoReserve() || isReturn()', '', '', find('#old-table'));
     if (sku != null) {
         sku = sku.innerText;
+        find('#sku-data').innerText = sku;
     }
     var device_name = findSibling('label', 'div.details', 'Device').textContent;
     var item = findByAttribute('td', 'ng-click', 'editSaleItem(saleItem, true)', '', '', find('#old-table'));
@@ -209,6 +219,7 @@ function updateLeadTable() {
         } else {
             device_type = device_name;
         }
+        find('#item-data').innerText = item;
     }
     var serial = findByAttribute('td', 'ng-if', '!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)', '', '', find('#old-table'));
     if (serial) {
@@ -220,19 +231,31 @@ function updateLeadTable() {
         amount = amount.innerText;
     }
     if (checkExist('#mobile-table')) {
-        find('#item-data').innerText = item;
-        find('#sku-data').innerText = sku;
-        find('#available-data').innerText = amount;
+        if (item) {
+            find('#item-data').innerText = item;
+        } else {
+            find('#item-data').innerText = "Error";
+        }
+        if (sku) {
+            find('#sku-data').innerText = sku;
+        } else {
+            find('#sku-data').innerText = "Error";
+        }
+        if (amount) {
+            find('#available-data').innerText = amount;
+        } else {
+            find('#available-data').innerTExt = "Error";
+        }
     }
 }
 
 function getDeviceName(text) {
-    if (text.contains('Samsung')) {
+    if (text.includes('Samsung')) {
         var index = inArray(text, samsung_list);
         if (index != -1) {
             return samsung_list[index];
         }
-    } else if (text.contains('iPhone')) {
+    } else if (text.includes('iPhone')) {
         var index = inArray(text, iphone_list);
         if (index != -1) {
             return iphone_list[index];
@@ -404,7 +427,18 @@ function workOrderPage() {
     // Add button the change progress of repair
     var workorder_button_create_run = setInterval(function() {
         if (!checkExist('#auto-note-button') && checkExist('div.header-buttons')) {
-            createTag(find('div.header-buttons'), 'button', 'auto-note-button', 'btn blue fastclickable', 'Generate Ticket', 'background-color: rgb(38, 156, 216); color: white;');
+            var auto_note_button = createTag(find('div.header-buttons'), 'button', 'auto-note-button', 'btn blue fastclickable', 'Generate Ticket', 'background-color: rgb(38, 156, 216); color: white;');
+            auto_note_button.addEventListener('click', function(button) {
+                if (button.innerText == 'Generate Ticket') {
+                    if (find('span.only-name').innerText.contains('IPHONE')) {
+                        iPhoneinProgress();
+                    }
+                } else if (button.innerText == 'Close Ticket') {
+                    if (find('span.only-name').innerText.contains('IPHONE')) {
+                        iPhoneCloseTicket();
+                    }
+                }
+            });
         }
         if (!checkExist('#scan-open-button') && checkExist('div.table-card')) {
             createTagBefore(find('div.table-card'), 1, 'button', 'scan-open-button', 'btn btn-cancel fastclickable', 'Scan Parts', 'width: 100%');
@@ -433,6 +467,7 @@ function workOrderPage() {
             clearInterval(workorder_scan_button_run);
         }
     }, 500);
+
     // page opens to scan items
     // Add button to open camera and scan part to the dialog
     // auto click cannot scan label and select field to type in for scanner
@@ -443,6 +478,88 @@ function workOrderPage() {
     // put the repair into progress
 
 }
+var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
+
+function iPhoneinProgress() {
+    var sleep_time = createNote('Repair in Progress', 'Device is being repaired.');
+    sleep(sleep_time + 4000).then(() => {
+        if (findByText('button', 'Create Repair Ticket')) {
+            findByText('button', 'Create Repair Ticket').click();
+        }
+    });
+    sleep(sleep_time + 5000).then(() => {
+        if (findByText('button', 'Proceed')) {
+            findByText('button', 'Proceed').click();
+        }
+    });
+    sleep(sleep_time + 5500).then(() => {
+        if (checkExist('#auto-note-button')) {
+            find('#auto-note-button').textContent = 'Close Ticket';
+        }
+    });
+}
+
+function iPhoneCloseTicket() {
+    var sleep_time = createNote('Quality Inspection', 'Device is repaired and is going through testing');
+    sleep(sleep_time + 500).then(() => {
+        if (findByText('button', 'Add')) {
+            findByText('button', 'Add').click();
+        }
+    });
+    sleep(sleep_time + 700).then(() => {
+        if (findByText('button', 'Test Complete')) {
+            findByText('button', 'Text Complete').click();
+        }
+    });
+    sleep(sleep_time + 1000).then(() => {
+        if (findByText('button', 'Done')) {
+            findByText('button', 'Done').click();
+        }
+    });
+    sleep_time = createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', sleep_time + 1000);
+    sleep(sleep_time + 500).then(() => {
+        if (findByText('button', 'Add')) {
+            findByText('button', 'Add');
+        }
+    });
+    sleep(sleep_time + 700).then(() => {
+        findByText('span.hover-text', 'Check Out').click();
+    });
+    sleep(sleep_time + 800). then(() => {
+        if (findByText('button', 'TRADE CREDIT')) {
+            findByText('button', 'TRADE CREDIT').click();
+        }
+    })
+}
+
+// Total sleep time 350
+function createNote(status, text, sleep_time=0) {
+    find(note_button).click();
+    if (!checkExist('#paneled-side-bar.closed')) {
+        var els = findAll('div.extra-actions > select > option');
+        for (var i = 0; i < els.length; i++) {
+            if (els[i].innerText == status) {
+                find('select.editor-add-in').value = i;
+                break;
+            }
+        }
+    }
+    // write in progress in field
+    find('.note-placeholder').style = 'display: none;';
+    find('.note-editable').innerHTML = text;
+    setField('.note-editable', 'input', text);
+    runAngularTrigger('div.extra-actions > select', 'change');
+    if (find('#private').checked) {
+        find('#private').click();
+    }
+    sleep(sleep_time + 250).then(() => {
+        findByText('button', 'Create Note').click();
+    });
+    sleep(sleep_time + 350).then(() => {
+        find(note_button).click();
+    });
+    return sleep_time + 350;
+}
 
 /**
             Helper Functions
@@ -450,9 +567,16 @@ function workOrderPage() {
 
 function inArray(item, array) {
     for (var i = 0; i < array.length; i++) {
-        if (item == array[i]) {
+        if (item.includes(array[i])) {
             return i;
         }
     }
     return -1;
+}
+
+function replaceClass(loc, original_class_name, new_class_name) {
+    if (loc.className.includes(original_class_name)) {
+        var old_class = loc.className;
+        loc.className = old_class.replaceAll(original_class_name, new_class_name);
+    }
 }
