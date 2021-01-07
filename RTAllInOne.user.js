@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -481,89 +481,188 @@ function workOrderPage() {
 var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
 
 function iPhoneinProgress() {
-    var sleep_time = createNote('Repair in Progress', 'Device is being repaired.');
-    sleep(sleep_time + 4000).then(() => {
-        if (findByText('button', 'Create Repair Ticket')) {
-            findByText('button', 'Create Repair Ticket').click();
-        }
+    createNote('Repair in Progress', 'Device is being repaired.');
+    Waiter.addTable(1000, function() {
+        return checkButtonClick('Create Repair Ticket');
     });
-    sleep(sleep_time + 5000).then(() => {
-        if (findByText('button', 'Proceed')) {
-            findByText('button', 'Proceed').click();
-        }
+    Waiter.addTable(1000, function() {
+        return checkButtonClick('Proceed');
     });
-    sleep(sleep_time + 5500).then(() => {
+    Waiter.addTable(1000, function() {
         if (checkExist('#auto-note-button')) {
             find('#auto-note-button').textContent = 'Close Ticket';
+            Waiter.clearAllTables();
+            return true;
         }
-    });
+        return false;
+    })
 }
 
 function iPhoneCloseTicket() {
-    var sleep_time = createNote('Quality Inspection', 'Device is repaired and is going through testing');
-    sleep(sleep_time + 500).then(() => {
-        if (findByText('button', 'Add')) {
-            findByText('button', 'Add').click();
-        }
+    createNote('Quality Inspection', 'Device is repaired and is going through testing.');
+    Waiter.addTable(1000, function() {
+        return checkButtonClick('Add', 'button.btn-confirm');
     });
-    sleep(sleep_time + 700).then(() => {
-        if (findByText('button', 'Test Complete')) {
-            findByText('button', 'Text Complete').click();
-        }
+    Waiter.addTable(1000, function() {
+        return checkButtonClick('Test Complete');
     });
-    sleep(sleep_time + 1000).then(() => {
-        if (findByText('button', 'Done')) {
-            findByText('button', 'Done').click();
-        }
+    Waiter.addTable(1000, function() {
+        return checkButtonClick('Done');
     });
-    sleep_time = createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', sleep_time + 1000);
-    sleep(sleep_time + 500).then(() => {
-        if (findByText('button', 'Add')) {
-            findByText('button', 'Add');
+    Waiter.addTable(1000, function() {
+        if (checkExist('div.toast-message')) {
+            return true;
         }
+        return false;
     });
-    sleep(sleep_time + 700).then(() => {
-        findByText('span.hover-text', 'Check Out').click();
-    });
-    sleep(sleep_time + 800). then(() => {
-        if (findByText('button', 'TRADE CREDIT')) {
-            findByText('button', 'TRADE CREDIT').click();
+    Waiter.addTable(1200, function() {
+        if (checkExist('span.bg-quality-inspection')) {
+            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', 1000);
+            return true;
         }
-    })
+        return false;
+    });
+    Waiter.addTable(1500, function() {
+        return checkButtonClick('Add', 'button.btn-confirm');
+    });
+    Waiter.addTable(1000, function() {
+        return checkButtonClick('Check Out', 'span.hover-text');
+    });
+    Waiter.addTable(1000, function() {
+        if (checkButtonClick('TRADE CREDIT')) {
+            Waiter.clearAllTables();
+            return true;
+        }
+        return false;
+    });
 }
 
 // Total sleep time 350
 function createNote(status, text, sleep_time=0) {
     find(note_button).click();
-    if (!checkExist('#paneled-side-bar.closed')) {
-        var els = findAll('div.extra-actions > select > option');
-        for (var i = 0; i < els.length; i++) {
-            if (els[i].innerText == status) {
-                find('select.editor-add-in').value = i;
-                break;
+    sleep(sleep_time + 250).then(() => {
+        if (!checkExist('#paneled-side-bar.closed')) {
+            var els = findAll('div.extra-actions > select > option');
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].innerText == status) {
+                    find('select.editor-add-in').value = i;
+                    break;
+                }
             }
         }
-    }
-    // write in progress in field
-    find('.note-placeholder').style = 'display: none;';
-    find('.note-editable').innerHTML = text;
-    setField('.note-editable', 'input', text);
-    runAngularTrigger('div.extra-actions > select', 'change');
-    if (find('#private').checked) {
-        find('#private').click();
-    }
-    sleep(sleep_time + 250).then(() => {
-        findByText('button', 'Create Note').click();
+        // write in progress in field
+        find('.note-placeholder').style = 'display: none;';
+        find('.note-editable').innerHTML = text;
+        setField('.note-editable', 'input', text);
+        find('select.editor-add-in').click();
+        runAngularTrigger('div.extra-actions > select', 'change');
+        if (find('#private').checked) {
+            find('#private').click();
+        }
+        sleep(sleep_time + 250).then(() => {
+            findByText('button', 'Create Note').click();
+        });
+        sleep(sleep_time + 350).then(() => {
+            find(note_button).click();
+        });
     });
-    sleep(sleep_time + 350).then(() => {
-        find(note_button).click();
-    });
-    return sleep_time + 350;
+    return sleep_time + 600;
 }
 
 /**
             Helper Functions
 */
+
+function checkButtonClick(title, selector='button') {
+    var button = findByText(selector, title);
+    if (button) {
+        if (!button.disabled) {
+            button.click();
+            return true;
+        }
+    }
+    return false;
+}
+
+var Waiter = {
+    waiting_list: [],
+    table_list: [],
+    addTable: function(check_time, orderCheck, clearCondition=false) {
+        console.log('FIRST');
+        console.log('Table Number:', table_number);
+        console.log('Order Check:', orderCheck);
+        console.log('Clear Condition:', clearCondition);
+        var table_number = this.waiting_list.length;
+        this.table_list.push(false);
+        this.waiting_list.push(setInterval(Waiter.checkTable, check_time, table_number, orderCheck, clearCondition));
+        return this.waiting_list.length - 1; // Returns current index
+    },
+    checkTable: function(table_number, orderCheck, clearCondition) {
+        console.log('Table Number:', table_number);
+        console.log('Clear Condition Type:', clearCondition.typeof);
+        console.log('Order Check:', orderCheck);
+        console.log('Clear Condition:', clearCondition);
+        if (clearCondition == false) {
+            if (table_number > 0) {
+                if (Waiter.table_list[table_number - 1]) {
+                    if (orderCheck()) {
+                        Waiter.clearTable(table_number);
+                    }
+                }
+            } else {
+                console.log('Ordering:', orderCheck());
+                if (orderCheck()) {
+                    Waiter.clearTable(table_number);
+                }
+            }
+        } else if (clearCondition.typeof == 'function') {
+            if (!clearCondition()) {
+                if (table_number > 0) {
+                    if (Waiter.table_list[table_number - 1]) {
+                        if (orderCheck()) {
+                            Waiter.clearTable(table_number);
+                        }
+                    }
+                } else {
+                    if (orderCheck()) {
+                        Waiter.clearTable(table_number);
+                    }
+                }
+            } else {
+                Waiter.clearAllTables();
+            }
+        }
+    },
+    clearTable: function(table_number) {
+        Waiter.table_list[table_number] = true;
+        clearInterval(Waiter.waiting_list[table_number]);
+    },
+    tableClearBefore: function(table_number) {
+        for (var i = 0; i < table_number; i++) {
+            if (!Waiter.table_list[i]) {
+                return false;
+            }
+        }
+        return true;
+    },
+    clearAllTables: function() {
+        for (var i = 0; i < Waiter.waiting_list.length; i++) {
+            clearInterval(Waiter.waiting_list[i]);
+        }
+        Waiter.waiting_list = [];
+        Waiter.table_list = [];
+    },
+    checkButtonClick: function(title, selector='button') {
+        var button = findByText(selector, title);
+        if (button) {
+            if (!button.disabled) {
+                button.click();
+                return true;
+            }
+        }
+        return false;
+    }
+}
 
 function inArray(item, array) {
     for (var i = 0; i < array.length; i++) {
