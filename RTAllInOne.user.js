@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.3
+// @version      1.0.4
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -20,6 +20,13 @@ var create_workorder_ran = RAN_WAITING;
 var workorder_ran = RAN_WAITING;
 (function() {
     var check_run = setInterval(function() {
+        if (checkURL('https://portal.ubif.net/store-ops/timeclock') && !checkExist('#update-button')) { // Check to see if update button is there
+            createTagAppend(find('.portal-actions'), 'button', 'update-button', 'btn blue left-icon fastclickable', 'Update Script', 'background-color: rgb(38, 156, 216); color: white;');
+            createTag(find('#update-button'), 'span', '', 'fa fa-fw fa-refresh');
+            find('#update-button').addEventListener('click', function() {
+                window.open('https://github.com/Ashcall3000/UBREAKIFIX/raw/master/RTAllInOne.user.js');
+            });
+        }
         // Runs on the lead page
         if (checkURL('https://portal.ubif.net/pos/aqleads/edit/') && lead_page_ran == RAN_WAITING) {
             lead_page_ran = leadPage();
@@ -42,11 +49,18 @@ var workorder_ran = RAN_WAITING;
             create_workorder_ran = RAN_WAITING;
         }
         // Runs on Work Order Page
-        if (checkURL('https://portal.ubif.net/pos/checkout-new/') && workorder_ran == RAN_WAITING) {
-            workOrderPage();
-            workorder_ran = true;
-        } else {
-            workorder_ran = RAN_WAITING;
+        if (checkURL('https://portal.ubif.net/pos/checkout-new/')) {
+            if (workorder_ran == RAN_WAITING) {
+                workOrderPage();
+                workorder_ran = true;
+            } else {
+                workorder_ran = RAN_WAITING;
+            }
+            if (checkExist('#ticket-button') && checkExist('span.bg-repair-in-progress')) {
+                if (find('#ticket-button').innerText == 'Generate Ticket') {
+                    find('#ticket-button').innerText = 'Close Ticket'
+                }
+            }
         }
     }, 500);
 }());
@@ -267,97 +281,53 @@ function getDeviceName(text) {
             End Lead Page Section
 */
 function selectDevicePage() {
-    // Checking to see if we can just create the workodrer or not
-    if (!findByText('button', 'Continue')) {
-        // Checking to see if the device is already selected
-        if (!checkExist('div.selected') && device_type != '') {
-            // Setting input field with device name and repair ie "iPhone 11 Repair"
-            setField('#device-type-searchbox', 'input', device_type + ' Repair');
-            var set_device_step_1 = RAN_WAITING;
-            // Setting interval to check every second to if it worked
-            var set_device_run_1 = setInterval(function() {
-                // Checks to see if portal says device not found
-                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') {
-                    // Checks to see if device was found
-                    if (findByText('a', device_type + ' Repair')) {
-                        findByText('a', device_type + ' Repair').click();
-                        set_device_step_1 = RAN_WORKED;
-                        clearInterval(set_device_run_1);
+    if (!findByText('button', 'Continue')) { // Checking to see if we can just create the workorder or not
+        if (!checkExist('div.selected') && device_type != '') { // Checking to see if the device is already selected
+            setField('#device-type-searchbox', 'input', device_type.trim() + ' Repair');
+            Waiter.addTable(function(table_number) {
+                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') { // Checks to see if portal says device not found
+                    if (!checkButtonClick(table_number, device_type.trim() + ' Repair'), 'a') {
+                        setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
                     }
-                } else { // Portal says device wasn't found
-                    set_device_step_1 = RAN_FAILED;
-                    clearInterval(set_device_run_1);
-                    // Portal is weird and changes ' Plus' to '+' for the device but not the item name
-                    setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
+                } else if (findByText('a', 'Device not found:')) {
+                    Waiter.clearTable(table_number);
                 }
-            }, 1000);
-            var set_device_step_2 = RAN_WAITING;
-            var set_device_run_2 = setInterval(function() {
-                // Check to see if step one worked or not
-                if (set_device_step_1 == RAN_FAILED) {
-                    // Checks to see if portal says device not found
-                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type.replace(' Plus', '+')) {
-                        // check to see if device was found
-                        if (findByText('a', device_type.replace(' Plus', '+'))) {
-                            findByText('a', device_type.replace(' Plus', '+')).click();
-                            set_device_step_2 = RAN_WORKED;
-                            clearInterval(set_device_run_2);
-                        }
+            }, 1000, );
+            Waiter.addTable(function(table_number) {
+                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type.replace(' Plus', '+')) {
+                    if (checkButtonClick(table_number, device_type.replace(' Plus', '+'), 'a')) {
+                        Waiter.tableClearBefore(table_number);
                     } else {
-                        set_device_step_2 = RAN_FAILED;
-                        clearInterval(set_device_run_2);
-                        // Portal is weird and doesn't like the word repair after the device name sometimes
                         setField('#device-type-searchbox', 'input', device_type);
                     }
-                } else if (set_device_step_1 == RAN_WORKED) {
-                    clearInterval(set_device_run_2);
+                } else if (findByText('a', 'Device not found:')) {
+                    Waiter.clearTable(table_number);
                 }
-            }, 1000);
-            var set_device_step_3 = RAN_WAITING;
-            var set_device_run_3 = setInterval(function() {
-                // Check to see if step 2 worked or not
-                if (set_device_step_2 == RAN_FAILED) {
-                    // Checks to see if Portal Says device not found
-                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type) {
-                        // Checks to see if device was found
-                        if (findByText('a', device_type)) {
-                            findByText('a', device_type).click();
-                            set_device_step_3 = RAN_WORKED;
-                            clearInterval(set_device_run_3);
-                        }
-                    } else { // We were not able to find the device and device has to set manually
-                        set_device_step_3 = RAN_FAILED;
-                        clearInterval(set_device_run_3);
+            });
+            Waiter.addTable(function(table_number) {
+                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type) {
+                    if (!checkButtonClick(table_number, device_type, 'a')) {
+                        Waiter.tableClearBefore(table_number);
                     }
-                // Check to see if any of the other steps were successfull or not
-                } else if (set_device_step_1 == RAN_WORKED || set_device_step_2 == RAN_WORKED) {
-                    clearInterval(set_device_run_3);
+                } else if (findByText('a', 'Device not found:')) {
+                    Waiter.clearTable(table_number);
                 }
-            }, 1000);
+            });
         }
-        // Search for and run imei fill section
-        var imei_ran_1 = setInterval(function() {
-            // Grab the IMEI field
-            var imei_field = findByAttribute('input', 'ng-model', 'deviceData.imei');
-            // Checking if IMEI field is on the page or not
-            if (imei_field) {
-                // check to make sure device has been selected
-                if (checkExist('div.selected')) {
-                    clearInterval(imei_ran_1);
-                    // Checking if IMEI field is filled or not
-                    if (imei_field.value.length != 15) {
-                        // Checking to see if the IMEI  on lead is the full imei
-                        if (imei.length == 15) {
+        Waiter.addTable(function(table_number) {
+            var imei_field = findByAttribute('input', 'ng-model', 'deviceData.imei'); // Grab the imei field
+            if (imei_field) { // Check if imei field is on the page or not
+                if (checkExist('div.selected')) { // Double check to make sure device has been selected
+                    Waiter.clearTable(table_number); // Stop the interval
+                    if (imei_field.value.length != 15) { // checking if the imie field is already filled
+                        if (imei.length == 15) { // Checking to see if the imei on lead is the full imei
                             setField(imei_field, 'input', imei);
                         } else {
                             setField(imei_field, 'input', imei + '0');
                             var guess = 1;
-                            // We start guessing what the last digit is
-                            var imei_guess = setInterval(function() {
-                                // checks to see if text invalid is there or not
-                                if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) {
-                                    // Checks to see if the Imei is valid or not
-                                    if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') {
+                            var imei_guess = setInterval(function() { // We start guessing what the last digit is
+                                if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) { // checks to see if text invalid is there or not
+                                    if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') { // Checks to see if the Imei is valid or not
                                         setField(imei_field, 'input', imei + guess.toString());
                                         guess += 1;
                                     }
@@ -369,73 +339,81 @@ function selectDevicePage() {
                     }
                 }
             }
-        }, 1000);
+        });
     }
-    var select_device_click = setInterval(function() {
-        // Checks to see if the button is there to click
-        if (findByText('button', 'Continue')) {
-            if (!findByText('button', 'Continue').disabled) {
+    Waiter.addTable(function(table_number) {
+        if (findByText('button', 'Continue')) { // Checks to see if the button can be clicked
+            if (!findByText('button', 'Continue').disabled) { // Checks to see if we can click the button
                 var serial_field = findByAttribute('input', 'ng-model', 'deviceData.serial');
                 var imei_field = findByAttribute('input', 'ng-model', 'deviceData.imei');
-                // Checks to see if imei and serial are equal or if serial is equal to lead imei
                 if (serial_field.value == imei_field.value ||
                     serial_field.value == imei ||
-                    serial_field.value == imei.substring(0, 14)) {
-                    // Clear serial field
+                    serial_field.value == imei.substring(0, 14)) { // Checks to see if imei and serial are equal or if serial is equal to lead imei
                     setField(serial_field, 'input', '');
                 }
-                clearInterval(select_device_click);
-                console.log('Click Continue');
-                //findByText('button', 'Continue').click();
+                checkButtonClick(table_number, 'Continue');
             }
         }
-    }, 1000);
+    });
     return RAN_WORKED;
 }
 
 function createWorkOrderPage() {
-    // Runs everysecond
-    var create_workorder_run = setInterval(function() {
-        // Checks to see if you can create the work order yet or not
-        if (!findByText('button', 'Create Work Order')) {
-            // A samsung repair checks for cracked screen option
-            if (findByText('div.repair-info-title', 'Cracked Screen')) {
-                // Samsung repair saying it's a cracked screen.
-                findByText('div.repair-info-title', 'Cracked Screen').click();
+    if (!Waiter.isEmpty()) {
+        Waiter.clearAllTables();
+    }
+    Waiter.addTable(function(table_number) {
+        console.log('Table Number:', table_number);
+        if (!findByText('button', 'Create Work Order')) { // Checks to see if you can't create the work order yet
+            if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
+                findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
             }
-            // Checks to see if the out of warranty drop down is available
-            if (checkExist('div.warranty-reason > select')) {
-                // Set reason as Impact Damage
-                find('div.warranty-reason > select').value = 0;
+            if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
+                find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
                 runAngularTrigger('div.warranty-reason > select', 'change');
             }
-            // Checks to see if we can click button to Continue
-            if (findByText('button', 'Out Of Warranty')) {
-                findByText('button', 'Out Of Warranty').click();
-                clearInterval(create_workorder_run);
-            }
-        } else {
-            // Click Continue
-            findByText('button', 'Create Work Order').click();
-            clearInterval(create_workorder_run);
+            checkButtonClick(table_number, 'Out Of Warranty');
+        } else { // this means you can create the work order
+            checkButtonClick(table_number, 'Create Work Order');
         }
-    }, 500);
+    });
+    Waiter.addTable(function(table_number) {
+        console.log('Table Number:', table_number);
+        if (findByText('button', 'Submit and Open Work Order')) {
+            if (checkExist('#customer-email')) {
+                if (find('#customer-email').value == '') {
+                    setField('#customer-email', 'input', 'decline@customer.com');
+                }
+                Waiter.clearTable(table_number);
+            }
+        }
+    });
+    Waiter.addTable(function(table_number) {
+        console.log('Table Number:', table_number);
+        checkButtonClick(table_number, 'Submit and Open Work Order');
+    });
     return RAN_WORKED;
 }
 
 function workOrderPage() {
-    // Add button the change progress of repair
-    var workorder_button_create_run = setInterval(function() {
-        if (!checkExist('#auto-note-button') && checkExist('div.header-buttons')) {
-            var auto_note_button = createTag(find('div.header-buttons'), 'button', 'auto-note-button', 'btn blue fastclickable', 'Generate Ticket', 'background-color: rgb(38, 156, 216); color: white;');
-            auto_note_button.addEventListener('click', function(button) {
+    if (!Waiter.isEmpty()) {
+        Waiter.clearAllTables();
+    }
+    Waiter.addTable(function(table_number) { // Add button the change progress of repair
+        if (!checkExist('#ticket-button') && checkExist('div.header-buttons')) {
+            var auto_note_button = createTag(find('div.header-buttons'), 'button', 'ticket-button', 'btn blue fastclickable', 'Generate Ticket', 'background-color: rgb(38, 156, 216); color: white;');
+            auto_note_button.addEventListener('click', function() {
                 if (button.innerText == 'Generate Ticket') {
-                    if (find('span.only-name').innerText.contains('IPHONE')) {
+                    if (find('span.only-name').innerText.includes('IPHONE')) {
                         iPhoneinProgress();
+                    } else if (find('span.only-name').innerText.includes('SAMSUNG')) {
+                        inProgressSamsung();
                     }
                 } else if (button.innerText == 'Close Ticket') {
-                    if (find('span.only-name').innerText.contains('IPHONE')) {
+                    if (find('span.only-name').innerText.includes('IPHONE')) {
                         iPhoneCloseTicket();
+                    } else if (find('span.only-name').innerText.includes('SAMSUNG')) {
+                        samsungCloseTicket();
                     }
                 }
             });
@@ -448,8 +426,8 @@ function workOrderPage() {
                 }
             });
         }
-        if (checkExist('#auto-note-button') && checkExist('#scan-open-button')) {
-            clearInterval(workorder_button_create_run);
+        if (checkExist('#ticket-button') && checkExist('#scan-open-button')) {
+            Waiter.clearTable(table_number);
         }
     }, 500);
     // add button to open scan dialog if there is a part that hasn't been scanned yet
@@ -482,60 +460,71 @@ var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.f
 
 function iPhoneinProgress() {
     createNote('Repair in Progress', 'Device is being repaired.');
-    Waiter.addTable(1000, function() {
-        return checkButtonClick('Create Repair Ticket');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Create Repair Ticket');
     });
-    Waiter.addTable(1000, function() {
-        return checkButtonClick('Proceed');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Proceed');
     });
-    Waiter.addTable(1000, function() {
-        if (checkExist('#auto-note-button')) {
-            find('#auto-note-button').textContent = 'Close Ticket';
-            Waiter.clearAllTables();
-            return true;
-        }
-        return false;
-    })
 }
 
 function iPhoneCloseTicket() {
     createNote('Quality Inspection', 'Device is repaired and is going through testing.');
-    Waiter.addTable(1000, function() {
-        return checkButtonClick('Add', 'button.btn-confirm');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
     });
-    Waiter.addTable(1000, function() {
-        return checkButtonClick('Test Complete');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Test Complete');
     });
-    Waiter.addTable(1000, function() {
-        return checkButtonClick('Done');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Done');
     });
-    Waiter.addTable(1000, function() {
+    Waiter.addTable(function(table_number) {
         if (checkExist('div.toast-message')) {
-            return true;
+            sleep(250).then(() => {
+                Waiter.clearTable(table_number)
+            })
         }
-        return false;
     });
-    Waiter.addTable(1200, function() {
+    Waiter.addTable(function(table_number) {
         if (checkExist('span.bg-quality-inspection')) {
             createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', 1000);
-            return true;
+            Waiter.clearTable(table_number);
         }
-        return false;
     });
-    Waiter.addTable(1500, function() {
-        return checkButtonClick('Add', 'button.btn-confirm');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
     });
-    Waiter.addTable(1000, function() {
-        return checkButtonClick('Check Out', 'span.hover-text');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Check Out', 'span.hover-text');
     });
-    Waiter.addTable(1000, function() {
-        if (checkButtonClick('TRADE CREDIT')) {
+    Waiter.addTable(function(table_number) {
+        if (checkButtonClick(table_number, 'TRADE CREDIT')) {
             Waiter.clearAllTables();
-            return true;
         }
-        return false;
     });
 }
+
+function inProgressSamsung() {
+    if (!Waiter.isEmpty()) {
+        Waiter.clearAllTables();
+    }
+    Waiter.addTable(function(table_number) {
+        checkButtonClick('Create GSPN Repair Ticket');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick('Create Repair Ticket');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick('Close', '.modal-dialog button');
+    });
+    Waiter.addTable(function(table_number) {
+        createNote('Repair in Progress', 'Device is bieng repaired.');
+        Waiter.clearAllTables();
+    });
+}
+
+function samsungCloseTicket() {}
 
 // Total sleep time 350
 function createNote(status, text, sleep_time=0) {
@@ -573,11 +562,14 @@ function createNote(status, text, sleep_time=0) {
             Helper Functions
 */
 
-function checkButtonClick(title, selector='button') {
+function checkButtonClick(table_number, title, selector='button') {
     var button = findByText(selector, title);
     if (button) {
         if (!button.disabled) {
             button.click();
+            sleep(250).then(() => {
+                Waiter.clearTable(table_number);
+            });
             return true;
         }
     }
@@ -587,46 +579,29 @@ function checkButtonClick(title, selector='button') {
 var Waiter = {
     waiting_list: [],
     table_list: [],
-    addTable: function(check_time, orderCheck, clearCondition=false) {
-        console.log('FIRST');
-        console.log('Table Number:', table_number);
-        console.log('Order Check:', orderCheck);
-        console.log('Clear Condition:', clearCondition);
+    addTable: function(orderCheck, check_time=1000, clearCondition=false) {
         var table_number = this.waiting_list.length;
         this.table_list.push(false);
         this.waiting_list.push(setInterval(Waiter.checkTable, check_time, table_number, orderCheck, clearCondition));
         return this.waiting_list.length - 1; // Returns current index
     },
     checkTable: function(table_number, orderCheck, clearCondition) {
-        console.log('Table Number:', table_number);
-        console.log('Clear Condition Type:', clearCondition.typeof);
-        console.log('Order Check:', orderCheck);
-        console.log('Clear Condition:', clearCondition);
         if (clearCondition == false) {
             if (table_number > 0) {
                 if (Waiter.table_list[table_number - 1]) {
-                    if (orderCheck()) {
-                        Waiter.clearTable(table_number);
-                    }
+                    orderCheck(table_number);
                 }
             } else {
-                console.log('Ordering:', orderCheck());
-                if (orderCheck()) {
-                    Waiter.clearTable(table_number);
-                }
+                orderCheck(table_number);
             }
         } else if (clearCondition.typeof == 'function') {
             if (!clearCondition()) {
                 if (table_number > 0) {
                     if (Waiter.table_list[table_number - 1]) {
-                        if (orderCheck()) {
-                            Waiter.clearTable(table_number);
-                        }
+                        orderCheck(table_number);
                     }
                 } else {
-                    if (orderCheck()) {
-                        Waiter.clearTable(table_number);
-                    }
+                    orderCheck(table_number);
                 }
             } else {
                 Waiter.clearAllTables();
@@ -634,11 +609,14 @@ var Waiter = {
         }
     },
     clearTable: function(table_number) {
-        Waiter.table_list[table_number] = true;
-        clearInterval(Waiter.waiting_list[table_number]);
+        if (table_number < Waiter.table_list.length &&
+            table_number < Waiter.waiting_list.length) {
+            Waiter.table_list[table_number] = true;
+            clearInterval(Waiter.waiting_list[table_number]);
+        }
     },
     tableClearBefore: function(table_number) {
-        for (var i = 0; i < table_number; i++) {
+        for (var i = 0; i <= table_number; i++) {
             if (!Waiter.table_list[i]) {
                 return false;
             }
@@ -652,15 +630,14 @@ var Waiter = {
         Waiter.waiting_list = [];
         Waiter.table_list = [];
     },
-    checkButtonClick: function(title, selector='button') {
-        var button = findByText(selector, title);
-        if (button) {
-            if (!button.disabled) {
-                button.click();
-                return true;
-            }
+    amountOfTables: function() {
+        return Waiter.waiting_list.length;
+    },
+    isEmpty: function() {
+        if (Waiter.amountOfTables() > 0) {
+            return false;
         }
-        return false;
+        return true;
     }
 }
 
