@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -52,15 +52,15 @@ var workorder_ran = RAN_WAITING;
         if (checkURL('https://portal.ubif.net/pos/checkout-new/')) {
             if (workorder_ran == RAN_WAITING) {
                 workOrderPage();
-                workorder_ran = true;
-            } else {
-                workorder_ran = RAN_WAITING;
+                workorder_ran = RAN_WORKED;
             }
             if (checkExist('#ticket-button') && checkExist('span.bg-repair-in-progress')) {
                 if (find('#ticket-button').innerText == 'Generate Ticket') {
                     find('#ticket-button').innerText = 'Close Ticket'
                 }
             }
+        } else {
+            workorder_ran = RAN_WAITING;
         }
     }, 500);
 }());
@@ -285,12 +285,16 @@ function selectDevicePage() {
         if (!checkExist('div.selected') && device_type != '') { // Checking to see if the device is already selected
             setField('#device-type-searchbox', 'input', device_type.trim() + ' Repair');
             Waiter.addTable(function(table_number) {
-                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') { // Checks to see if portal says device not found
-                    if (!checkButtonClick(table_number, device_type.trim() + ' Repair'), 'a') {
-                        setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
+                if (checkExist('div.selected')) {
+                    Waiter.tableClearBefore(2);
+                } else {
+                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') { // Checks to see if portal says device not found
+                        if (!checkButtonClick(table_number, device_type.trim() + ' Repair'), 'a') {
+                            setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
+                        }
+                    } else if (findByText('a', 'Device not found:')) {
+                        Waiter.clearTable(table_number);
                     }
-                } else if (findByText('a', 'Device not found:')) {
-                    Waiter.clearTable(table_number);
                 }
             }, 1000, );
             Waiter.addTable(function(table_number) {
@@ -403,13 +407,13 @@ function workOrderPage() {
         if (!checkExist('#ticket-button') && checkExist('div.header-buttons')) {
             var auto_note_button = createTag(find('div.header-buttons'), 'button', 'ticket-button', 'btn blue fastclickable', 'Generate Ticket', 'background-color: rgb(38, 156, 216); color: white;');
             auto_note_button.addEventListener('click', function() {
-                if (button.innerText == 'Generate Ticket') {
+                if (find('#ticket-button').innerText == 'Generate Ticket') {
                     if (find('span.only-name').innerText.includes('IPHONE')) {
                         iPhoneinProgress();
                     } else if (find('span.only-name').innerText.includes('SAMSUNG')) {
                         inProgressSamsung();
                     }
-                } else if (button.innerText == 'Close Ticket') {
+                } else if (find('#ticket-button').innerText == 'Close Ticket') {
                     if (find('span.only-name').innerText.includes('IPHONE')) {
                         iPhoneCloseTicket();
                     } else if (find('span.only-name').innerText.includes('SAMSUNG')) {
@@ -469,8 +473,14 @@ function iPhoneinProgress() {
 }
 
 function iPhoneCloseTicket() {
+    if (!Waiter.isEmpty()) {
+        Waiter.clearAllTables();
+        console.log('Clear Table');
+    }
     createNote('Quality Inspection', 'Device is repaired and is going through testing.');
+    console.log('Setting Work Order to Quality Inspection');
     Waiter.addTable(function(table_number) {
+        console.log('Running');
         checkButtonClick(table_number, 'Add', 'button.btn-confirm');
     });
     Waiter.addTable(function(table_number) {
@@ -563,6 +573,9 @@ function createNote(status, text, sleep_time=0) {
 */
 
 function checkButtonClick(table_number, title, selector='button') {
+    console.log('Table Number:', table_number);
+    console.log('Text:', title);
+    console.log('Selector:', selector);
     var button = findByText(selector, title);
     if (button) {
         if (!button.disabled) {
@@ -592,6 +605,7 @@ var Waiter = {
                     orderCheck(table_number);
                 }
             } else {
+                console.log('Waiter, Clear: False, Table Number:', table_number, 'Order Check:', orderCheck);
                 orderCheck(table_number);
             }
         } else if (clearCondition.typeof == 'function') {
@@ -624,6 +638,8 @@ var Waiter = {
         return true;
     },
     clearAllTables: function() {
+        console.log('-----Clear All Tables-----');
+        console.log('Amount of Tables:', Waiter.amountOfTables());
         for (var i = 0; i < Waiter.waiting_list.length; i++) {
             clearInterval(Waiter.waiting_list[i]);
         }
