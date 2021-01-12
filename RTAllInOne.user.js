@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -28,23 +28,29 @@ var workorder_ran = RAN_WAITING;
             });
         }
         // Runs on the lead page
-        if (checkURL('https://portal.ubif.net/pos/aqleads/edit/') && lead_page_ran == RAN_WAITING) {
-            lead_page_ran = leadPage();
+        if (checkURL('https://portal.ubif.net/pos/aqleads/edit/')) {
+            if (lead_page_ran == RAN_WAITING) {
+                lead_page_ran = leadPage();
+            }
         } else {
             lead_page_ran = RAN_WAITING;
         }
         // Runs on select device page
-        if (checkURL('https://portal.ubif.net/pos/device-type-select/lead/') && select_device_ran == RAN_WAITING) {
-            select_device_ran = selectDevicePage();
+        if (checkURL('https://portal.ubif.net/pos/device-type-select/lead/')) {
+            if (select_device_ran == RAN_WAITING) {
+                select_device_ran = selectDevicePage();
+            }
         } else {
             select_device_ran = RAN_WAITING;
         }
         // Runs on Continue page
-        if (checkURL('https://portal.ubif.net/pos/device-repair-select/') && create_workorder_ran == RAN_WAITING) {
-            create_workorder_ran = createWorkOrderPage();
-            imei = '';
-            device_type = '';
-            part_button = null;
+        if (checkURL('https://portal.ubif.net/pos/device-repair-select/')) {
+            if (create_workorder_ran == RAN_WAITING) {
+                create_workorder_ran = createWorkOrderPage();
+                imei = '';
+                device_type = '';
+                part_button = null;
+            }
         } else {
             create_workorder_ran = RAN_WAITING;
         }
@@ -60,6 +66,7 @@ var workorder_ran = RAN_WAITING;
                 }
             }
         } else {
+            Waiter.clearSingle('ticket-button');
             workorder_ran = RAN_WAITING;
         }
     }, 500);
@@ -296,7 +303,7 @@ function selectDevicePage() {
                         Waiter.clearTable(table_number);
                     }
                 }
-            }, 1000, );
+            });
             Waiter.addTable(function(table_number) {
                 if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type.replace(' Plus', '+')) {
                     if (checkButtonClick(table_number, device_type.replace(' Plus', '+'), 'a')) {
@@ -403,7 +410,7 @@ function workOrderPage() {
     if (!Waiter.isEmpty()) {
         Waiter.clearAllTables();
     }
-    Waiter.addTable(function(table_number) { // Add button the change progress of repair
+    Waiter.addSingle('ticket-button', function() { // Add button the change progress of repair
         if (!checkExist('#ticket-button') && checkExist('div.header-buttons')) {
             var auto_note_button = createTag(find('div.header-buttons'), 'button', 'ticket-button', 'btn blue fastclickable', 'Generate Ticket', 'background-color: rgb(38, 156, 216); color: white;');
             auto_note_button.addEventListener('click', function() {
@@ -433,7 +440,7 @@ function workOrderPage() {
         if (checkExist('#ticket-button') && checkExist('#scan-open-button')) {
             Waiter.clearTable(table_number);
         }
-    }, 500);
+    }, 1000);
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function() {
         if (!checkExist('#scan-camera-button') && findByText('h3.modal-title', 'VERIFY ITEM LABELS/SERIALS')
@@ -590,8 +597,24 @@ function checkButtonClick(table_number, title, selector='button') {
 }
 
 var Waiter = {
+    single_list: [], // Tables that run independentally
     waiting_list: [],
     table_list: [],
+    addSingle: function(name, orderCheck, check_time=500) {
+        this.single_list[name] = setInterval(function() {
+            orderCheck();
+        }, check_time);
+    },
+    clearSingle: function(name) {
+        if (this.single_list[name] != null) {
+            clearInterval(this.single_list[name]);
+        }
+    },
+    clearAllSingles: function() {
+        for (var name in this.single_list) {
+            clearInterval(this.single_list[name]);
+        }
+    },
     addTable: function(orderCheck, check_time=1000, clearCondition=false) {
         var table_number = this.waiting_list.length;
         this.table_list.push(false);
