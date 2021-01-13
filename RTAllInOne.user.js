@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -72,7 +72,11 @@ var workorder_ran = RAN_WAITING;
         }
     }, 500);
 }());
-
+if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+    alert('Media Devices Work');
+} else {
+    alert('Can\'t use on this browser');
+}
 
 
 /**
