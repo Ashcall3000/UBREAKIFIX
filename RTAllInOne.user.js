@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -456,41 +456,29 @@ function workOrderPage() {
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function() {
         if (!checkExist('#scan-camera-button') && findByText('h3.modal-title', 'VERIFY ITEM LABELS/SERIALS')
-            && findByAttribute('img.fastclickable', 'ng-click', 'openScanItemsModal()')) {
+            && findByAttribute('img.fastclickable', 'ng-click', 'openScanItemsModal()') && checkExist('div.barcode-start')) {
             // Create button
             createTagBefore(find('div.barcode-start'), 1, 'button', 'scan-camera-button', 'btn btn-cancel fastclickable', 'Open Scanner', 'width: 100%');
             find('#scan-camera-button').addEventListener('click', function() {
                 if (findByText('button', 'Cannot Scan Label')) {
                     findByText('button', 'Cannot Scan Label').id = 'scan-label-button';
                     find('#scan-label-button').click();
-                    Waiter.addTable(function(table_number) {
-                        if (checkExist('div.barcode-scan input')) {
-                            find('div.barcode-scan input').id = 'barcode-scan-field';
-                            Waiter.clearTable(table_number);
-                            Quagga.init({
-                                inputStream : {
-                                    name : "Live",
-                                    type : "LiveStream",
-                                    target: document.querySelector('#barcode-scan-field')    // Or '#yourElement' (optional)
-                                },
-                                decoder : {
-                                    readers : ["code_128_reader"]
-                                }
-                            }, function(err) {
-                                if (err) {
-                                    console.log(err);
-                                    return
-                                }
-                                console.log("Initialization finished. Ready to start");
-                                Quagga.start();
-                            });
-                        }
-                    });
+                    if (!checkExist('#interactive')) {
+                        createScanner();
+                    }
                 }
             });
-        } // else if (!findByAttribute('img.fastclickable', 'ng-click', 'openScanItemsModal()')) {
-        //     clearInterval(workorder_scan_button_run);
-        // }
+        } else if (checkExist('div.scan-sale-items-modal div.modal-row') && !checkExist('#interactive') && !checkExist('#scan-camera-button')) {
+            createTagAppend(find('div.scan-sale-items-modal div.modal-row'), 'button', 'scan-camera-button', 'btn btn-cancel fastclickable', 'Open Scanner', 'width: 100%');
+            find('#scan-camera-button').addEventListener('click', function() {
+                if (!checkExist('#interactive')) {
+                    createScanner();
+                }
+            });
+        }
+        if (checkExist('#interactive') && checkExist('#scan-camera-button')) {
+            remove('#scan-camera-button');
+        }
     }, 500);
 
     // page opens to scan items
@@ -503,6 +491,57 @@ function workOrderPage() {
     // put the repair into progress
 
 }
+
+function createScanner() {
+    Waiter.addTable(function(table_number) {
+        if (checkExist('div.barcode-scan input')) {
+            find('div.barcode-scan input').id = 'barcode-scan-field';
+            createTagAppend(findByAttribute('div', 'ng-if', '!isAllInventoryScanned()'), 'div', 'interactive', 'viewport');
+            addHTML('#interactive', '<video autoplay="true" preload="auto" src(unknown) muted="true" playsinline="true"></video>' +
+                    '<canvas class="drawingBuffer" width="640" height="480"');
+
+            createTag(find('#interactive'), 'button', 'stop-camera-button', 'btn btn-cancel fastclickable', 'Close Camera', 'width: 100%');
+            find('#interactive').addEventListener('click', function() {
+                Quagga.stop();
+                remove('#interactive');
+            })
+            Waiter.clearTable(table_number);
+            Quagga.init({
+                inputStream : {
+                    name : "Live",
+                    type : "LiveStream",
+                    constraints: {
+                        width: 640,
+                        height: 480
+                    },
+                    target: document.querySelector('#interactive.viewport')    // Or '#yourElement' (optional)
+                },
+                decoder : {
+                    readers : ["ean_8_reader"]
+                }
+            }, function(err) {
+                if (err) {
+                    console.log(err);
+                    return
+                }
+                console.log("Initialization finished. Ready to start");
+                Quagga.start();
+            });
+            console.log('Going to run On Detected');
+            Quagga.onDetected(function(data) {
+                if (data.codeResult) {
+                    console.log('Barcode:', data.codeResult.code);
+                    setField('#barcode-scan-field', 'input', data.codeResult.code);
+                } else {
+                    console.log('Failed to read barcode.');
+                }
+                Quagga.stop();
+                remove('#interactive');
+            });
+        }
+    });
+}
+
 var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
 
 function iPhoneinProgress() {
