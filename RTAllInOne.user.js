@@ -1,11 +1,12 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
 // @require      https://github.com/Ashcall3000/UBREAKIFIX/raw/master/SearchElements.js
+// @require      https://github.com/serratus/quaggaJS/raw/master/dist/quagga.min.js
 // @downloadURL  https://github.com/Ashcall3000/UBREAKIFIX/raw/master/RTAllInOne.user.js
 // @updateURL    https://github.com/Ashcall3000/UBREAKIFIX/raw/master/RTAllInOne.user.js
 // @run-at document-idle
@@ -71,6 +72,8 @@ var workorder_ran = RAN_WAITING;
         }
     }, 500);
 }());
+
+
 
 /**
             Start Lead Page Section
@@ -292,12 +295,15 @@ function selectDevicePage() {
         if (!checkExist('div.selected') && device_type != '') { // Checking to see if the device is already selected
             setField('#device-type-searchbox', 'input', device_type.trim() + ' Repair');
             Waiter.addTable(function(table_number) {
+                console.log('First Table');
                 if (checkExist('div.selected')) {
-                    Waiter.tableClearBefore(2);
+                    Waiter.clearTablesBefore(2);
                 } else {
                     if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') { // Checks to see if portal says device not found
-                        if (!checkButtonClick(table_number, device_type.trim() + ' Repair'), 'a') {
+                        if (!checkButtonClick(table_number, device_type.trim() + ' Repair', 'a')) {
                             setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
+                        } else {
+                            Waiter.clearTablesBefore(2);
                         }
                     } else if (findByText('a', 'Device not found:')) {
                         Waiter.clearTable(table_number);
@@ -305,9 +311,10 @@ function selectDevicePage() {
                 }
             });
             Waiter.addTable(function(table_number) {
+                console.log('Second Table');
                 if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type.replace(' Plus', '+')) {
                     if (checkButtonClick(table_number, device_type.replace(' Plus', '+'), 'a')) {
-                        Waiter.tableClearBefore(table_number);
+                        Waiter.clearTablesBefore(table_number);
                     } else {
                         setField('#device-type-searchbox', 'input', device_type);
                     }
@@ -316,9 +323,10 @@ function selectDevicePage() {
                 }
             });
             Waiter.addTable(function(table_number) {
+                console.log('Third Table');
                 if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type) {
                     if (!checkButtonClick(table_number, device_type, 'a')) {
-                        Waiter.tableClearBefore(table_number);
+                        Waiter.clearTablesBefore(table_number);
                     }
                 } else if (findByText('a', 'Device not found:')) {
                     Waiter.clearTable(table_number);
@@ -438,7 +446,7 @@ function workOrderPage() {
             });
         }
         if (checkExist('#ticket-button') && checkExist('#scan-open-button')) {
-            Waiter.clearTable(table_number);
+            Waiter.clearSingle('ticket-button');
         }
     }, 1000);
     // add button to open scan dialog if there is a part that hasn't been scanned yet
@@ -449,12 +457,36 @@ function workOrderPage() {
             createTagBefore(find('div.barcode-start'), 1, 'button', 'scan-camera-button', 'btn btn-cancel fastclickable', 'Open Scanner', 'width: 100%');
             find('#scan-camera-button').addEventListener('click', function() {
                 if (findByText('button', 'Cannot Scan Label')) {
-                    findByText('button', 'Cannot Scan Label').click();
+                    findByText('button', 'Cannot Scan Label').id = 'scan-label-button';
+                    find('#scan-label-button').click();
+                    Waiter.addTable(function(table_number) {
+                        if (checkExist('div.barcode-scan input')) {
+                            find('div.barcode-scan input').id = 'barcode-scan-field';
+                            Waiter.clearTable(table_number);
+                            Quagga.init({
+                                inputStream : {
+                                    name : "Live",
+                                    type : "LiveStream",
+                                    target: document.querySelector('#barcode-scan-field')    // Or '#yourElement' (optional)
+                                },
+                                decoder : {
+                                    readers : ["code_128_reader"]
+                                }
+                            }, function(err) {
+                                if (err) {
+                                    console.log(err);
+                                    return
+                                }
+                                console.log("Initialization finished. Ready to start");
+                                Quagga.start();
+                            });
+                        }
+                    });
                 }
             });
-        } else if (!findByAttribute('img.fastclickable', 'ng-click', 'openScanItemsModal()')) {
-            clearInterval(workorder_scan_button_run);
-        }
+        } // else if (!findByAttribute('img.fastclickable', 'ng-click', 'openScanItemsModal()')) {
+        //     clearInterval(workorder_scan_button_run);
+        // }
     }, 500);
 
     // page opens to scan items
@@ -527,16 +559,16 @@ function inProgressSamsung() {
         Waiter.clearAllTables();
     }
     Waiter.addTable(function(table_number) {
-        checkButtonClick('Create GSPN Repair Ticket');
+        checkButtonClick(table_number, 'Create GSPN Repair Ticket');
     });
     Waiter.addTable(function(table_number) {
-        checkButtonClick('Create Repair Ticket');
+        checkButtonClick(table_number, 'Create Repair Ticket');
     });
     Waiter.addTable(function(table_number) {
-        checkButtonClick('Close', '.modal-dialog button');
+        checkButtonClick(table_number, 'Close', '.modal-dialog button');
     });
     Waiter.addTable(function(table_number) {
-        createNote('Repair in Progress', 'Device is bieng repaired.');
+        createNote(table_number, 'Repair in Progress', 'Device is bieng repaired.');
         Waiter.clearAllTables();
     });
 }
@@ -650,6 +682,11 @@ var Waiter = {
             table_number < Waiter.waiting_list.length) {
             Waiter.table_list[table_number] = true;
             clearInterval(Waiter.waiting_list[table_number]);
+        }
+    },
+    clearTablesBefore: function(table_number) {
+        for (var i = 0; i <= table_number; i++) {
+            this.clearTable(i);
         }
     },
     tableClearBefore: function(table_number) {
