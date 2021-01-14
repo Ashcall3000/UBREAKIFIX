@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
+// @version      1.1.1
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -516,7 +516,7 @@ function createScanner() {
                     target: document.querySelector('#interactive.viewport')    // Or '#yourElement' (optional)
                 },
                 decoder : {
-                    readers : ["ean_8_reader"]
+                    readers : ["code_128_reader"]
                 }
             }, function(err) {
                 if (err) {
@@ -527,15 +527,39 @@ function createScanner() {
                 Quagga.start();
             });
             console.log('Going to run On Detected');
-            Quagga.onDetected(function(data) {
-                if (data.codeResult) {
-                    console.log('Barcode:', data.codeResult.code);
-                    setField('#barcode-scan-field', 'input', data.codeResult.code);
-                } else {
-                    console.log('Failed to read barcode.');
+            // Quagga.onDetected(function(data) {
+            //     if (data.codeResult) {
+            //         console.log('Barcode:', data.codeResult.code);
+            //         setField('#barcode-scan-field', 'input', data.codeResult.code);
+            //     } else {
+            //         console.log('Failed to read barcode.');
+            //     }
+            //     Quagga.stop();
+            //     remove('#interactive');
+            // });
+            Quagga.onProcessed(function(result) {
+                var drawingCtx = Quagga.canvas.ctx.overlay,
+                    drawingCanvas = Quagga.canvas.dom.overlay;
+
+                if (result) {
+                    if (result.boxes) {
+                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
+                        result.boxes.filter(function (box) {
+                            return box !== result.box;
+                        }).forEach(function (box) {
+                            Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
+                        });
+                    }
+
+                    if (result.box) {
+                        Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
+                    }
+
+                    if (result.codeResult && result.codeResult.code) {
+                        Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
+                        console.log('Bardcode:', result.codeResult.code);
+                    }
                 }
-                Quagga.stop();
-                remove('#interactive');
             });
         }
     });
@@ -615,7 +639,65 @@ function inProgressSamsung() {
     });
 }
 
-function samsungCloseTicket() {}
+function samsungCloseTicket() {
+    if (!Waiter.isEmpty()) {
+        Waiter.clearAllTables();
+    }
+    createNote('Quality Inspection', 'Device is reapired and going through testing.');
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Test Complete');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Done');
+    });
+    Waiter.addTable(function(table_number) {
+        if (checkExist('div.toast-message')) {
+            sleep(250).then(() => {
+                Waiter.clearTable(table_number)
+            })
+        }
+    });
+    Waiter.addTable(function(table_number) {
+        if (checkExist('span.bg-quality-inspection')) {
+            find(note_button).click();
+            var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
+            var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
+            var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
+            selector_1.id = 'selector-1';
+            selector_2.id = 'selector-2';
+            selector_3.id = 'selector-3';
+            selector_1.value = 8;
+            runAngularTrigger('#selector-1', 'click');
+            selector_2.value = 2;
+            runAngularTrigger('#selector-2', 'click');
+            selector_3.value = 3;
+            runAngularTrigger('#selector-3', 'click');
+            find(note_button).click();
+            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', 1000);
+            Waiter.clearTable(table_number);
+        }
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Test Complete');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Done');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Check Out', 'span.hover-text');
+    });
+    Waiter.addTable(function(table_number) {
+        if (checkButtonClick(table_number, 'TRADE CREDIT')) {
+            Waiter.clearAllTables();
+        }
+    });
+}
 
 // Total sleep time 350
 function createNote(status, text, sleep_time=0) {
@@ -772,5 +854,34 @@ function replaceClass(loc, original_class_name, new_class_name) {
     if (loc.className.includes(original_class_name)) {
         var old_class = loc.className;
         loc.className = old_class.replaceAll(original_class_name, new_class_name);
+    }
+}
+
+function getSelectorForElement(element) {
+    let path;
+    while (element) {
+        let subSelector = element.localName;
+        if (!subSelector) {
+            break;
+        }
+        subSelector = subSelector.toLowerCase();
+        var parent = element.parentElement;
+        if (parent) {
+            var sameTagSiblings = parent.children;
+            if (sameTagSiblings.lenght > 1) {
+                let nameCount = 0;
+                var index = [...sameTagSiblings].findIndex((child) => {
+                    if (element.localName === child.localName) {
+                        nameCount++;
+                    }
+                    return child === elem;
+                }) + 1;
+                if (index > 1 && nameCount > 1) {
+                    subSelector += ':nth-child(' + index + ')';
+                }
+            }
+        }
+        path = subSelector + (path ? '>' + path : '');
+        element = parent;
     }
 }
