@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.1
+// @version      1.1.2
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -662,7 +662,6 @@ function samsungCloseTicket() {
     });
     Waiter.addTable(function(table_number) {
         if (checkExist('span.bg-quality-inspection')) {
-            find(note_button).click();
             var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
             var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
             var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
