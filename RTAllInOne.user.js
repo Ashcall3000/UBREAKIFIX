@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.2
+// @version      1.1.3
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -80,51 +80,51 @@ var workorder_ran = RAN_WAITING;
 */
 // List of iPhone Device Names
 var iphone_list = [
-    'iPhone 12',
     'iPhone 12 Pro',
     'iPhone 12 Mini',
     'iPhone 12 Pro Max',
+    'iPhone 12',
     'iPhone SE (2nd Gen)',
-    'iPhone 11',
-    'iPhone 11 Pro',
     'iPhone 11 Pro Max',
+    'iPhone 11 Pro',
+    'iPhone 11',
     'iPhone XS Max',
     'iPhone XS',
     'iPhone XR',
     'iPhone X',
-    'iPhone 8',
     'iPhone 8 Plus',
-    'iPhone 7',
+    'iPhone 8',
     'iPhone 7 Plus',
-    'iPhone 6S',
+    'iPhone 7',
     'iPhone 6S Plus',
-    'iPhone 6',
-    'iPhone 6 Plus'
+    'iPhone 6S',
+    'iPhone 6 Plus',
+    'iPhone 6'
 ];
 // List of Samsung Galaxy Device Names
 var samsung_list = [
-    'Samsung Galaxy Note 20',
     'Samsung Galaxy Note 20 Ultra',
-    'Samsung Galaxy Note 10',
+    'Samsung Galaxy Note 20',
     'Samsung Galaxy Note 10 Plus',
+    'Samsung Galaxy Note 10',
     'Samsung Galaxy Note 9',
     'Samsung Galaxy Note 8',
-    'Samsung Galaxy S20',
     'Samsung Galaxy S20 FE',
     'Samsung Galaxy S20 Ultra',
     'Samsung Galaxy S20 Plus',
     'Samsung Galaxy S20 5G',
+    'Samsung Galaxy S20',
     'Samsung Galaxy S10 Plus',
-    'Samsung Galaxy S10',
     'Samsung Galaxy S10e',
     'Samsung Galaxy S10 Lite',
     'Samsung Galaxy S10 5G',
-    'Samsung Galaxy S9',
+    'Samsung Galaxy S10',
     'Samsung Galaxy S9 Plus',
-    'Samsung Galaxy S8',
+    'Samsung Galaxy S9',
     'Samsung Galaxy S8 Plus',
-    'Samsung Galaxy S7',
+    'Samsung Galaxy S8',
     'Samsung Galaxy S7 Edge',
+    'Samsung Galaxy S7',
     'Samsung Galaxy A71',
     'Samsung Galaxy A70',
     'Samsung Galaxy A51',
@@ -132,8 +132,8 @@ var samsung_list = [
     'Samsung Galaxy A21',
     'Samsung Galaxy A20',
     'Samsung Galaxy A11',
-    'Samsung Galaxy A10',
-    'Samsung Galaxy A10e'
+    'Samsung Galaxy A10e',
+    'Samsung Galaxy A10'
 
 ];
 
@@ -291,14 +291,14 @@ function getDeviceName(text) {
             End Lead Page Section
 */
 function selectDevicePage() {
-    if (!findByText('button', 'Continue')) { // Checking to see if we can just create the workorder or not
+    if (!findByText('button', 'Continue') || findByText('button', 'Continue').disabled) { // Checking to see if we can just create the workorder or not
         if (!checkExist('div.selected') && device_type != '') { // Checking to see if the device is already selected
             setField('#device-type-searchbox', 'input', device_type.trim() + ' Repair');
             Waiter.addTable(function(table_number) {
                 console.log('First Table');
                 if (checkExist('div.selected')) {
                     Waiter.clearTablesBefore(2);
-                } else {
+                } else if (checkExist('ul.search-dropdown li')) {
                     if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != '') { // Checks to see if portal says device not found
                         if (!checkButtonClick(table_number, device_type.trim() + ' Repair', 'a')) {
                             setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
@@ -306,30 +306,40 @@ function selectDevicePage() {
                             Waiter.clearTablesBefore(2);
                         }
                     } else if (findByText('a', 'Device not found:')) {
-                        Waiter.clearTable(table_number);
+                        setField('#device-type-searchbox', 'input', device_type.replace(' Plus', '+'));
+                        sleep(250).then(() => {
+                            Waiter.clearTable(table_number);
+                        });
                     }
                 }
             });
             Waiter.addTable(function(table_number) {
                 console.log('Second Table');
-                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type.replace(' Plus', '+')) {
-                    if (checkButtonClick(table_number, device_type.replace(' Plus', '+'), 'a')) {
-                        Waiter.clearTablesBefore(table_number);
-                    } else {
+                if (checkExist('ul.search-dropdown li')) {
+                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value == device_type.replace(' Plus', '+')) {
+                        if (checkButtonClick(table_number, device_type.replace(' Plus', '+'), 'a')) {
+                            Waiter.clearTablesBefore(2);
+                        } else {
+                            setField('#device-type-searchbox', 'input', device_type);
+                        }
+                    } else if (findByText('a', 'Device not found:')) {
                         setField('#device-type-searchbox', 'input', device_type);
+                        sleep(250).then(() => {
+                            Waiter.clearTable(table_number);
+                        });
                     }
-                } else if (findByText('a', 'Device not found:')) {
-                    Waiter.clearTable(table_number);
                 }
             });
             Waiter.addTable(function(table_number) {
                 console.log('Third Table');
-                if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value != device_type) {
-                    if (!checkButtonClick(table_number, device_type, 'a')) {
-                        Waiter.clearTablesBefore(table_number);
+                if (checkExist('ul.search-dropdown li')) {
+                    if (!findByText('a', 'Device not found:') && find('#device-type-searchbox').value == device_type) {
+                        if (!checkButtonClick(table_number, device_type, 'a')) {
+                            Waiter.clearTablesBefore(table_number);
+                        }
+                    } else if (findByText('a', 'Device not found:')) {
+                        Waiter.clearTable(table_number);
                     }
-                } else if (findByText('a', 'Device not found:')) {
-                    Waiter.clearTable(table_number);
                 }
             });
         }
@@ -445,9 +455,6 @@ function workOrderPage() {
                 }
             });
         }
-        if (checkExist('#ticket-button') && checkExist('#scan-open-button')) {
-            Waiter.clearSingle('ticket-button');
-        }
     }, 1000);
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function() {
@@ -507,8 +514,8 @@ function createScanner() {
                     name : "Live",
                     type : "LiveStream",
                     constraints: {
-                        width: 640,
-                        height: 480
+                        width: 1280,
+                        height: 720
                     },
                     numOfWorkers: 8,
                     locate: true,
@@ -809,7 +816,7 @@ var Waiter = {
     },
     clearTablesBefore: function(table_number) {
         for (var i = 0; i <= table_number; i++) {
-            this.clearTable(i);
+            Waiter.clearTable(i);
         }
     },
     tableClearBefore: function(table_number) {
