@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.3
+// @version      1.1.4
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -500,6 +500,7 @@ function createScanner() {
         if (checkExist('div.barcode-scan input')) {
             find('div.barcode-scan input').id = 'barcode-scan-field';
             createTagAppend(findByAttribute('div', 'ng-if', '!isAllInventoryScanned()'), 'div', 'interactive', 'viewport');
+            addHTML('#interactive', '<input type="file" />');
             addHTML('#interactive', '<video autoplay="true" preload="auto" src(unknown) muted="true" playsinline="true"></video>' +
                     '<canvas class="drawingBuffer" width="640" height="480"');
 
@@ -519,12 +520,21 @@ function createScanner() {
                     },
                     numOfWorkers: 8,
                     locate: true,
-                    frequency: 10,
                     target: document.querySelector('#interactive.viewport')    // Or '#yourElement' (optional)
                 },
                 decoder : {
                     readers : ["code_128_reader"]
-                }
+                },
+                halfSample: false,
+                frequency: 25,
+                patchSize: "medium"
+                // locate: false,
+                // area: {
+                //     top:"50%",
+                //     right: "50%",
+                //     left: "50%",
+                //     bottom: "50%"
+                // }
             }, function(err) {
                 if (err) {
                     console.log(err);
@@ -534,40 +544,36 @@ function createScanner() {
                 Quagga.start();
             });
             console.log('Going to run On Detected');
-            // Quagga.onDetected(function(data) {
-            //     if (data.codeResult) {
-            //         console.log('Barcode:', data.codeResult.code);
-            //         setField('#barcode-scan-field', 'input', data.codeResult.code);
-            //     } else {
-            //         console.log('Failed to read barcode.');
-            //     }
-            //     Quagga.stop();
-            //     remove('#interactive');
-            // });
-            Quagga.onProcessed(function(result) {
-                var drawingCtx = Quagga.canvas.ctx.overlay,
-                    drawingCanvas = Quagga.canvas.dom.overlay;
-
-                if (result) {
-                    if (result.boxes) {
-                        drawingCtx.clearRect(0, 0, parseInt(drawingCanvas.getAttribute("width")), parseInt(drawingCanvas.getAttribute("height")));
-                        result.boxes.filter(function (box) {
-                            return box !== result.box;
-                        }).forEach(function (box) {
-                            Quagga.ImageDebug.drawPath(box, {x: 0, y: 1}, drawingCtx, {color: "green", lineWidth: 2});
-                        });
-                    }
-
-                    if (result.box) {
-                        Quagga.ImageDebug.drawPath(result.box, {x: 0, y: 1}, drawingCtx, {color: "#00F", lineWidth: 2});
-                    }
-
-                    if (result.codeResult && result.codeResult.code) {
-                        Quagga.ImageDebug.drawPath(result.line, {x: 'x', y: 'y'}, drawingCtx, {color: 'red', lineWidth: 3});
-                        console.log('Bardcode:', result.codeResult.code);
+            Quagga.onDetected(function(data) {
+                if (data.codeResult) {
+                    if (data.codeResult.code.lenght > 10 && data.codeResult.code.includes('-')) {
+                        setField('#barcode-scan-field', 'input', data.codeResult.code);
+                        Quagga.stop();
+                        remove('#interactive');
+                    } else if (data.codeResult.code.length == 10) {
+                        setField('#barcode-scan-field', 'input', data.codeResult.code);
+                        Quagga.stop();
+                        remove('#interactive');
+                    } else {
+                        setField('#barcode-scan-field', 'input', data.codeResult.code);
                     }
                 }
             });
+            // Quagga.onProcessed(function(result) {
+            //     if (result.codeResult) {
+            //         if (result.codeResult.code.lenght > 10 && result.codeResult.code.includes('-')) {
+            //             setField('#barcode-scan-field', 'input', result.codeResult.code);
+            //             Quagga.stop();
+            //             remove('#interactive');
+            //         } else if (result.codeResult.code.length == 10) {
+            //             setField('#barcode-scan-field', 'input', result.codeResult.code);
+            //             Quagga.stop();
+            //             remove('#interactive');
+            //         } else {
+            //             setField('#barcode-scan-field', 'input', result.codeResult.code);
+            //         }
+            //     }
+            // });
         }
     });
 }
@@ -641,7 +647,7 @@ function inProgressSamsung() {
         checkButtonClick(table_number, 'Close', '.modal-dialog button');
     });
     Waiter.addTable(function(table_number) {
-        createNote(table_number, 'Repair in Progress', 'Device is bieng repaired.');
+        createNote('Repair in Progress', 'Device is bieng repaired.');
         Waiter.clearAllTables();
     });
 }
@@ -669,6 +675,34 @@ function samsungCloseTicket() {
     });
     Waiter.addTable(function(table_number) {
         if (checkExist('span.bg-quality-inspection')) {
+            if (checkExist('#paneled-side-bar.closed')) {
+                find(note_button).click();
+            }
+            sleep(250).then(() => {
+                Waiter.clearTable(table_number);
+            })
+        }
+    })
+    Waiter.addTable(function(table_number) {
+        if (checkExist('span.bg-quality-inspection')) {
+            if (!checkExist('#paneled-side-bar.closed')) {
+                var els = findAll('div.extra-actions > select > option');
+                for (var i = 0; i < els.length; i++) {
+                    if (els[i].innerText == 'Repaired - RFP') {
+                        find('select.editor-add-in').value = i;
+                        break;
+                    }
+                }
+            }
+            // write in progress in field
+            find('.note-placeholder').style = 'display: none;';
+            find('.note-editable').innerHTML = 'Device is repaired and ready to be returned to the customer.';
+            setField('.note-editable', 'input', 'Device is repaired and ready to be returned to the customer.');
+            find('select.editor-add-in').click();
+            runAngularTrigger('div.extra-actions > select', 'change');
+            if (find('#private').checked) {
+                find('#private').click();
+            }
             var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
             var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
             var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
@@ -676,14 +710,16 @@ function samsungCloseTicket() {
             selector_2.id = 'selector-2';
             selector_3.id = 'selector-3';
             selector_1.value = 8;
-            runAngularTrigger('#selector-1', 'click');
+            runAngularTrigger('#selector-1', 'change');
             selector_2.value = 2;
+            runAngularTrigger('#selector-2', 'change');
             runAngularTrigger('#selector-2', 'click');
-            selector_3.value = 3;
-            runAngularTrigger('#selector-3', 'click');
-            find(note_button).click();
-            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', 1000);
-            Waiter.clearTable(table_number);
+            selector_3.value = 1;
+            runAngularTrigger('#selector-3', 'change');
+            sleep(250).then(() => {
+                find(note_button).click();
+                Waiter.clearTable(table_number);
+            });
         }
     });
     Waiter.addTable(function(table_number) {
