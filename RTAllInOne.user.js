@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.4
+// @version      1.1.5
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -407,6 +407,13 @@ function createWorkOrderPage() {
         }
     });
     Waiter.addTable(function(table_number) {
+        if (!checkButtonClick(table_number, 'Yes')) {
+            if (findByText('button', 'Submit and Open Work Order')) {
+                Waiter.clearTable(table_number);
+            }
+        }
+    });
+    Waiter.addTable(function(table_number) {
         console.log('Table Number:', table_number);
         if (findByText('button', 'Submit and Open Work Order')) {
             if (checkExist('#customer-email')) {
@@ -717,9 +724,16 @@ function samsungCloseTicket() {
             selector_3.value = 1;
             runAngularTrigger('#selector-3', 'change');
             sleep(250).then(() => {
-                find(note_button).click();
+                findByText('button', 'Create Note').click();
                 Waiter.clearTable(table_number);
             });
+        }
+    });
+    Waiter.addTable(function(table_number) {
+        if (!checkButtonClick(table_number, 'Yes')) {
+            if (findByText('button.btn-confirm', 'Add')) {
+                Waiter.clearTable(table_number);
+            }
         }
     });
     Waiter.addTable(function(table_number) {
