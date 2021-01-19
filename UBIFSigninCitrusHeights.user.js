@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         UBIF Sign-in Citrus Heights
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  Creates buttons on the sign in popup to select which user you are.
 // @author       Christopher Sullivan
 // @include        https://portal.ubif.net/*
