@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.5
+// @version      1.1.7
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -141,6 +141,7 @@ var samsung_list = [
 var part_button = null;
 var imei = '';
 var device_type = '';
+var part_serial = '';
 
 function leadPage() {
     var close_window = setInterval(function() {
@@ -249,6 +250,7 @@ function updateLeadTable() {
     if (serial) {
         serial = serial.innerText.substring(6);
         find('#serial-data').innerText = serial;
+        part_serial = serial;
     }
     var amount = findByAttribute('span', 'ng-if', '!saleItem.inventory.store_item.item.is_service', '', '', find('#old-table'));
     if (amount != null) {
@@ -391,6 +393,15 @@ function createWorkOrderPage() {
     if (!Waiter.isEmpty()) {
         Waiter.clearAllTables();
     }
+    Waiter.addSingle('samsung-warranty', function() {
+        if (findByText('button', 'Standard Work Order')) {
+            findByText('button', 'Standard Work Order').click();
+            Waiter.clearSingle('samsung-warranty');
+        }
+        if (!checkURL('https://portal.ubif.net/pos/device-repair-select/')) {
+            Waiter.clearSingle('samsung-warranty');
+        }
+    })
     Waiter.addTable(function(table_number) {
         console.log('Table Number:', table_number);
         if (!findByText('button', 'Create Work Order')) { // Checks to see if you can't create the work order yet
@@ -424,10 +435,7 @@ function createWorkOrderPage() {
             }
         }
     });
-    Waiter.addTable(function(table_number) {
-        console.log('Table Number:', table_number);
-        checkButtonClick(table_number, 'Submit and Open Work Order');
-    });
+    Waiter.addCheckButtonTable('Submit and Open Work Order');
     return RAN_WORKED;
 }
 
@@ -463,6 +471,21 @@ function workOrderPage() {
             });
         }
     }, 1000);
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Cannot Scan Label');
+    });
+    Waiter.addTable(function(table_number) {
+        if (checkExist('div.scan-items-modal input')) {
+            setField(find('div.scan-items-modal input'), 'input', part_serial);
+            Waiter.clearTable(table_number);
+        }
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Submit');
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Generate Ticket');
+    })
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function() {
         if (!checkExist('#scan-camera-button') && findByText('h3.modal-title', 'VERIFY ITEM LABELS/SERIALS')
@@ -589,12 +612,8 @@ var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.f
 
 function iPhoneinProgress() {
     createNote('Repair in Progress', 'Device is being repaired.');
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Create Repair Ticket');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Proceed');
-    });
+    Waiter.addCheckButtonTable('Create Repair Ticket');
+    Waiter.addCheckButtonTable('Proceed');
 }
 
 function iPhoneCloseTicket() {
@@ -604,16 +623,9 @@ function iPhoneCloseTicket() {
     }
     createNote('Quality Inspection', 'Device is repaired and is going through testing.');
     console.log('Setting Work Order to Quality Inspection');
-    Waiter.addTable(function(table_number) {
-        console.log('Running');
-        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Test Complete');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Done');
-    });
+    Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
+    Waiter.addCheckButtonTable('Test Complete');
+    Waiter.addCheckButtonTable('Done');
     Waiter.addTable(function(table_number) {
         if (checkExist('div.toast-message')) {
             sleep(250).then(() => {
@@ -627,12 +639,8 @@ function iPhoneCloseTicket() {
             Waiter.clearTable(table_number);
         }
     });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Check Out', 'span.hover-text');
-    });
+    Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
+    Waiter.addCheckButtonTable('Check Out', 'span.hover-text');
     Waiter.addTable(function(table_number) {
         if (checkButtonClick(table_number, 'TRADE CREDIT')) {
             Waiter.clearAllTables();
@@ -644,15 +652,9 @@ function inProgressSamsung() {
     if (!Waiter.isEmpty()) {
         Waiter.clearAllTables();
     }
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Create GSPN Repair Ticket');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Create Repair Ticket');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Close', '.modal-dialog button');
-    });
+    Waiter.addCheckButtonTable('Create GSPN Repair Ticket');
+    Waiter.addCheckButtonTable('Create Repair Ticket');
+    Waiter.addCheckButtonTable('Close', '.modal-dialog button');
     Waiter.addTable(function(table_number) {
         createNote('Repair in Progress', 'Device is bieng repaired.');
         Waiter.clearAllTables();
@@ -664,15 +666,9 @@ function samsungCloseTicket() {
         Waiter.clearAllTables();
     }
     createNote('Quality Inspection', 'Device is reapired and going through testing.');
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Test Complete');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Done');
-    });
+    Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
+    Waiter.addCheckButtonTable('Test Complete');
+    Waiter.addCheckButtonTable('Done');
     Waiter.addTable(function(table_number) {
         if (checkExist('div.toast-message')) {
             sleep(250).then(() => {
@@ -736,18 +732,10 @@ function samsungCloseTicket() {
             }
         }
     });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Add', 'button.btn-confirm');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Test Complete');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Done');
-    });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Check Out', 'span.hover-text');
-    });
+    Waiter.addCheckButtonTable('Add', 'Button.btn-confirm');
+    Waiter.addCheckButtonTable('Test Complete');
+    Waiter.addCheckButtonTable('Done');
+    Waiter.addCheckButtonTable('Check Out', 'span.hover-text');
     Waiter.addTable(function(table_number) {
         if (checkButtonClick(table_number, 'TRADE CREDIT')) {
             Waiter.clearAllTables();
@@ -813,25 +801,38 @@ var Waiter = {
     waiting_list: [],
     table_list: [],
     addSingle: function(name, orderCheck, check_time=500) {
-        this.single_list[name] = setInterval(function() {
+        Waiter.single_list[name] = setInterval(function() {
             orderCheck();
         }, check_time);
     },
     clearSingle: function(name) {
-        if (this.single_list[name] != null) {
-            clearInterval(this.single_list[name]);
+        if (Waiter.single_list[name] != null) {
+            clearInterval(Waiter.single_list[name]);
         }
     },
     clearAllSingles: function() {
-        for (var name in this.single_list) {
-            clearInterval(this.single_list[name]);
+        for (var name in Waiter.single_list) {
+            clearInterval(Waiter.single_list[name]);
         }
     },
+    addCheckButtonTable: function(title, selector='button', check_time=1000, clearCondition=false) {
+        return Waiter.addTable(function(table_number) {
+            var button = findByText(selector, title);
+            if (button) {
+                if (!button.disabled) {
+                    button.click();
+                    sleep(250).then(() => {
+                        Waiter.clearTable(table_number);
+                    });
+                }
+            }
+        });
+    },
     addTable: function(orderCheck, check_time=1000, clearCondition=false) {
-        var table_number = this.waiting_list.length;
-        this.table_list.push(false);
-        this.waiting_list.push(setInterval(Waiter.checkTable, check_time, table_number, orderCheck, clearCondition));
-        return this.waiting_list.length - 1; // Returns current index
+        var table_number = Waiter.waiting_list.length;
+        Waiter.table_list.push(false);
+        Waiter.waiting_list.push(setInterval(Waiter.checkTable, check_time, table_number, orderCheck, clearCondition));
+        return table_number; // Returns current index
     },
     checkTable: function(table_number, orderCheck, clearCondition) {
         if (clearCondition == false) {
