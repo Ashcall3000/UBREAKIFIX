@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.7
+// @version      1.1.8
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -74,7 +74,7 @@ var workorder_ran = RAN_WAITING;
 }());
 
 
-
+// #region LeadPage
 /**
             Start Lead Page Section
 */
@@ -141,7 +141,6 @@ var samsung_list = [
 var part_button = null;
 var imei = '';
 var device_type = '';
-var part_serial = '';
 
 function leadPage() {
     var close_window = setInterval(function() {
@@ -250,7 +249,7 @@ function updateLeadTable() {
     if (serial) {
         serial = serial.innerText.substring(6);
         find('#serial-data').innerText = serial;
-        part_serial = serial;
+        window.localStorage['part-serial'] = serial;
     }
     var amount = findByAttribute('span', 'ng-if', '!saleItem.inventory.store_item.item.is_service', '', '', find('#old-table'));
     if (amount != null) {
@@ -292,6 +291,8 @@ function getDeviceName(text) {
 /**
             End Lead Page Section
 */
+// #endregion
+//#region SelectDevicePage
 function selectDevicePage() {
     if (!findByText('button', 'Continue') || findByText('button', 'Continue').disabled) { // Checking to see if we can just create the workorder or not
         if (!checkExist('div.selected') && device_type != '') { // Checking to see if the device is already selected
@@ -388,13 +389,19 @@ function selectDevicePage() {
     });
     return RAN_WORKED;
 }
-
+//#endregion
+//#region CreateWorkOrderPage
 function createWorkOrderPage() {
     if (!Waiter.isEmpty()) {
         Waiter.clearAllTables();
     }
     Waiter.addSingle('samsung-warranty', function() {
         if (findByText('button', 'Standard Work Order')) {
+            if (checkExist('#customer-email')) {
+                if (find('#customer-email').value == '') {
+                    setField('#customer-email', 'input', 'decline@customer.com');
+                }
+            }
             findByText('button', 'Standard Work Order').click();
             Waiter.clearSingle('samsung-warranty');
         }
@@ -404,19 +411,67 @@ function createWorkOrderPage() {
     })
     Waiter.addTable(function(table_number) {
         console.log('Table Number:', table_number);
-        if (!findByText('button', 'Create Work Order')) { // Checks to see if you can't create the work order yet
-            if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
-                findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
+        if (!findByText('button', 'Create Work Order')) {
+            // Might be samsung lets check
+            if (findByText('button', 'Out Of Warranty')) {
+                // It's a samsung
+                if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
+                    findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
+                }
+                if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
+                    find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
+                    runAngularTrigger('div.warranty-reason > select', 'change');
+                }
+                checkButtonClick(table_number, 'Out Of Warranty');
             }
-            if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
-                find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
-                runAngularTrigger('div.warranty-reason > select', 'change');
-            }
-            checkButtonClick(table_number, 'Out Of Warranty');
-        } else { // this means you can create the work order
+        } else {
+            // Not a samsung
             checkButtonClick(table_number, 'Create Work Order');
         }
     });
+    Waiter.addTable(function (table_number) {
+        // Check if it's samsung or an iphone
+        if (!findByText('button', 'Create Work Order')) {
+            if (findByText('button', 'Out Of Warranty')) {
+                Waiter.clearTable(table_number);
+            }
+        } else {
+            checkButtonClick(table_number, 'Create Work Order');
+        }
+    });
+    Waiter.addTable(function (table_number) {
+        if (findByText('button', 'Out Of Warranty')) {
+            if (findByText('button', 'Out Of Warranty').disabled) {
+                checkButtonClick(table_number, 'Cracked Screen', 'div.repair-info-title');
+            } else {
+                checkButtonClick(table_number, 'Out Of Warranty');
+            }
+        } else {
+            Waiter.clearTable(table_number);
+        }
+    });
+    Waiter.addTable(function (table_number) {
+        if (findByText('button', 'Out Of Warranty')) {
+            if (findByText('button', 'Out Of Warranty').disabled) {
+                if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
+                    find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
+                    runAngularTrigger('div.warranty-reason > select', 'change');
+                    Waiter.clearTable(table_number);
+                }
+            } else {
+                checkButtonClick(table_number, 'Out Of Warranty');
+            }
+        } else {
+            Waiter.clearTable(table_number);
+        }
+    });
+    Waiter.addTable(function (table_number) {
+        if (findByText('button', 'Out Of Warranty')) {
+            checkButtonClick(table_number, 'Out Of Warranty');
+        } else {
+            Waiter.clearTable(table_number);
+        }
+    })
     Waiter.addTable(function(table_number) {
         if (!checkButtonClick(table_number, 'Yes')) {
             if (findByText('button', 'Submit and Open Work Order')) {
@@ -438,7 +493,8 @@ function createWorkOrderPage() {
     Waiter.addCheckButtonTable('Submit and Open Work Order');
     return RAN_WORKED;
 }
-
+//#endregion
+//#region WorkOrderPage
 function workOrderPage() {
     if (!Waiter.isEmpty()) {
         Waiter.clearAllTables();
@@ -476,16 +532,13 @@ function workOrderPage() {
     });
     Waiter.addTable(function(table_number) {
         if (checkExist('div.scan-items-modal input')) {
-            setField(find('div.scan-items-modal input'), 'input', part_serial);
+            setField(find('div.scan-items-modal input'), 'input', window.localStorage['part-serial']);
             Waiter.clearTable(table_number);
         }
     });
     Waiter.addTable(function(table_number) {
         checkButtonClick(table_number, 'Submit');
     });
-    Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Generate Ticket');
-    })
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function() {
         if (!checkExist('#scan-camera-button') && findByText('h3.modal-title', 'VERIFY ITEM LABELS/SERIALS')
@@ -612,6 +665,13 @@ var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.f
 
 function iPhoneinProgress() {
     createNote('Repair in Progress', 'Device is being repaired.');
+    Waiter.addTable(function (table_number) {
+        if (checkExist('div.toast-message')) {
+            sleep(250).then(() => {
+                Waiter.clearTable(table_number)
+            })
+        }
+    });
     Waiter.addCheckButtonTable('Create Repair Ticket');
     Waiter.addCheckButtonTable('Proceed');
 }
@@ -656,7 +716,7 @@ function inProgressSamsung() {
     Waiter.addCheckButtonTable('Create Repair Ticket');
     Waiter.addCheckButtonTable('Close', '.modal-dialog button');
     Waiter.addTable(function(table_number) {
-        createNote('Repair in Progress', 'Device is bieng repaired.');
+        createNote('Repair in Progress', 'Device is being repaired.');
         Waiter.clearAllTables();
     });
 }
@@ -774,7 +834,8 @@ function createNote(status, text, sleep_time=0) {
     });
     return sleep_time + 600;
 }
-
+//#endregion
+//#region HelperFunctions
 /**
             Helper Functions
 */
@@ -942,3 +1003,4 @@ function getSelectorForElement(element) {
         element = parent;
     }
 }
+//#endregion
