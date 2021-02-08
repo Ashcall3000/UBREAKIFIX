@@ -1,3 +1,4 @@
+//#version 1.0
 /**
  * find
  * function to find an element by Css selector, if element is given
@@ -7,7 +8,7 @@
  * @param element - Element object from document
  * @return Element Object
  */
-function find(css, element=false) {
+function find(css, element = false) {
     if (element !== false) {
         return element.querySelector(css);
     } else {
@@ -23,7 +24,7 @@ function find(css, element=false) {
  * @param element - Element obect from document
  * @return Element Object Array
  */
-function findAll(css, element=false) {
+function findAll(css, element = false) {
     if (element !== false) {
         return element.querySelectorAll(css);
     } else {
@@ -41,7 +42,7 @@ function findAll(css, element=false) {
  * @param element - Element object to search in
  * @return Element Object
  */
-function findByText(css, text, element=false) {
+function findByText(css, text, element = false) {
     var els = findAll(css, element);
     for (var i = 0; i < els.length; i++) {
         if (els[i].innerText != "" && els[i].innerText.includes(text)) {
@@ -60,7 +61,7 @@ function findByText(css, text, element=false) {
  * @param element - Element object to search in
  * @return Element Object Array
  */
-function findAllByText(css, text, element=false) {
+function findAllByText(css, text, element = false) {
     var els = findAll(css, element);
     var list = [];
     for (var i = 0; i < els.length; i++) {
@@ -83,7 +84,7 @@ function findAllByText(css, text, element=false) {
  * @param element - Element Object to search in
  * @return Element Object
  */
-function findSibling(css, css_sib, text="", element=false) {
+function findSibling(css, css_sib, text = "", element = false) {
     var el;
     if (text !== "") {
         el = findByText(css, text, element);
@@ -116,7 +117,7 @@ function findSibling(css, css_sib, text="", element=false) {
  * @param element - Element Object to search in
  * @return Element Object
  */
-function findByAttribute(css, attribute, value, css_sib="", text="", element=false) {
+function findByAttribute(css, attribute, value, css_sib = "", text = "", element = false) {
     var els = [];
     if (css_sib !== "") {
         els.push(findSibling(css, css_sib, text, element));
@@ -142,9 +143,9 @@ function findByAttribute(css, attribute, value, css_sib="", text="", element=fal
  * @param css_sib
  * @param element
  */
-function remove(css, text="", css_sib="", element=false) {
+function remove(css, text = "", css_sib = "", element = false) {
     var el;
-    if (typeof(css) == "string") {
+    if (typeof (css) == "string") {
         if (css_sib !== "") {
             el = findSibling(css, css_sib, text, element);
         } else if (text !== "") {
@@ -158,9 +159,10 @@ function remove(css, text="", css_sib="", element=false) {
     el.parentNode.removeChild(el);
 }
 
-function removeAll(css, text="", element=false) {
+function removeAll(css, text = "", element = false) {
     var el;
-    if (typeof(css) == "string") {if (text !== "") {
+    if (typeof (css) == "string") {
+        if (text !== "") {
             el = findAllByText(css, text, element);
         } else {
             el = findAll(css, element);
@@ -169,7 +171,7 @@ function removeAll(css, text="", element=false) {
         el = css;
     }
     if (el.length > 1) {
-        el.forEach(function(item) {
+        el.forEach(function (item) {
             item.parentNode.removeChild(item);
         })
     } else {
@@ -185,7 +187,7 @@ function removeAll(css, text="", element=false) {
  * @param element - Element Object from document
  * @return boolean
  */
-function checkExist(css, element=false) {
+function checkExist(css, element = false) {
     if (findAll(css, element).length > 0) {
         return true;
     } else {
@@ -230,9 +232,9 @@ function checkURL(url) {
  * @param css_sib - String CSS Selector to find in parent of css
  * @param element - Element Object to search within
  */
-function eventFire(css, etype, text="", css_sib="", element=false) {
+function eventFire(css, etype, text = "", css_sib = "", element = false) {
     var el;
-    if (typeof(css) == "string") {
+    if (typeof (css) == "string") {
         if (css_sib !== "") {
             el = findSibling(css, css_sib, text, element);
         } else if (text !== "") {
@@ -272,9 +274,9 @@ function eventFire(css, etype, text="", css_sib="", element=false) {
  * @param css_sib - String CSS Selector to find
  * @param element - Element Object to search in
  */
-function setField(css, etype, text, text_search="", css_sib="", element=false) {
+function setField(css, etype, text, text_search = "", css_sib = "", element = false) {
     var el;
-    if (typeof(css) == "string") {
+    if (typeof (css) == "string") {
         if (css_sib !== "") {
             el = findSibling(css, css_sib, text_search, element);
         } else if (text_search !== "") {
@@ -302,7 +304,7 @@ function setField(css, etype, text, text_search="", css_sib="", element=false) {
  * @param search_text - Text to search for to find element
  * @param element - Searches in given element
  */
-function addHTML(css, add_text, search_text="", element=false) {
+function addHTML(css, add_text, search_text = "", element = false) {
     var input = find(css, element);
     if (search_text != "") {
         input = findByText(css, search_text, element);
@@ -322,7 +324,7 @@ function addHTML(css, add_text, search_text="", element=false) {
  * @param el_class - class of new element
  * @param text - the inner text of the new element
  */
-function createTagBefore(loc, node, tag, id='', el_class='', text='', style='') {
+function createTagBefore(loc, node, tag, id = '', el_class = '', text = '', style = '') {
     var element = document.createElement(tag);
     if (id != '') {
         element.setAttribute('id', id);
@@ -351,7 +353,7 @@ function createTagBefore(loc, node, tag, id='', el_class='', text='', style='') 
  * @param el_class - class of new element
  * @param text - the inner text of the new element
  */
-function createTagAppend(loc, tag, id='', el_class='', text='', style='') {
+function createTagAppend(loc, tag, id = '', el_class = '', text = '', style = '') {
     var element = document.createElement(tag);
     if (id != '') {
         element.setAttribute('id', id);
@@ -380,7 +382,7 @@ function createTagAppend(loc, tag, id='', el_class='', text='', style='') {
  * @param el_class - class of new element
  * @param text - the inner text of the new element
  */
-function createTag(loc, tag, id='', el_class='', text='', style='') {
+function createTag(loc, tag, id = '', el_class = '', text = '', style = '') {
     var element = document.createElement(tag);
     if (id != '') {
         element.setAttribute('id', id);
@@ -398,7 +400,7 @@ function createTag(loc, tag, id='', el_class='', text='', style='') {
     return element;
 }
 
-function createInput(loc, type, name='', value='', id='', el_class='', style='') {
+function createInput(loc, type, name = '', value = '', id = '', el_class = '', style = '') {
     var element = createTag(loc, 'input', id, el_class, '', style);
     element.setAttribute('type', type);
     if (name != '') {
@@ -410,7 +412,7 @@ function createInput(loc, type, name='', value='', id='', el_class='', style='')
     return element;
 }
 
-function createInputAppend(loc, type, name='', value='', id='', el_class='', style='') {
+function createInputAppend(loc, type, name = '', value = '', id = '', el_class = '', style = '') {
     var element = createTagAppend(loc, 'input', id, el_class, '', style);
     element.setAttribute('type', type);
     if (name != '') {
@@ -422,7 +424,7 @@ function createInputAppend(loc, type, name='', value='', id='', el_class='', sty
     return element;
 }
 
-function createInputBefore(loc, node, type, name='', value='', id='', el_class='', style='') {
+function createInputBefore(loc, node, type, name = '', value = '', id = '', el_class = '', style = '') {
     var element = createTagBefore(loc, node, 'input', id, el_class, '', style);
     element.setAttribute('type', type);
     if (name != '') {
@@ -470,9 +472,9 @@ function itemInArray(item, array) {
  * @param id - id of the select element
  * @param el_class - the class of the select element
  */
-function createDropdown(loc, items, id='', el_class='') {
+function createDropdown(loc, items, id = '', el_class = '') {
     var text = '';
-    items.forEach(function(item) {
+    items.forEach(function (item) {
         text += '<option value="' + item + '">' + item + '</option>';
     });
     var dropdown = createTag(loc, 'select', id, el_class);
@@ -490,7 +492,7 @@ function createDropdown(loc, items, id='', el_class='') {
  */
 function runAngularTrigger(css, trigger) {
     var el = css;
-    if (typeof(css) == "string") {
+    if (typeof (css) == "string") {
         el = find(css);
     }
     angular.element(el).triggerHandler(trigger);
@@ -501,19 +503,19 @@ function runAngularTrigger(css, trigger) {
 
 // Returns the variable where you can add stuff
 // bottom id popup-bottom
-function createPopup(title, size="md") {
+function createPopup(title, size = "md") {
     var table = createTagAppend(find('body'), 'div', 'popup-add');
     var html = '<style>#back_button, #skip_button, #submit_button, #update_button, .desc_button { color: #fff !important; background-color: #DA291C !important;} .desc_button:hover { color: #fff !important; background-color: #B71C1C !important};#update_title { color: #b71c1c;}</style>';
     var body = '<div id="backdrop" class="modal-backdrop fade in" modal-animation-class="fade" modal-in-class="in" ng-style="{\'z-index\': 1040 + (index &amp;&amp; 1 || 0) + index*10}" modal-backdrop="modal-backdrop" modal-animation="true" style="z-index: 1040;"></div><div id="popup-table" modal-render="true" tabindex="-1" role="dialog" class="modal fade fastclickable in" modal-animation-class="fade" modal-in-class="in" ng-style="{\'z-index\': 1050 + index*10, display: \'block\'}" ng-click="close($event)" modal-window="modal-window" size="' + size + '" index="0" animate="animate" modal-animation="true" style="z-index: 1050; display: block;"><div class="modal-dialog modal-' + size + '" ng-class="size ? \'modal-\' + size : \'\'"><div class="modal-content" modal-transclude=""><div style="min-height: 100px" class="portal-base"><div class="modal-header"><div class="row"><h4 class="modal-title col-md-9"> ' + title + '</h4><button type="button" id="close-popup-table-button" class="btn btn-cancel pull-right fastclickable">Close</button></div></div><div class="modal-body"><div id="popup-table-div" class="portal-panel panel"></div><div id="popup-bottom"></div></div></div></div></div></div>';
     addHTML('#popup-add', html);
     addHTML('#popup-add', body);
-    find('#close-popup-table-button').addEventListener('click', function() {
+    find('#close-popup-table-button').addEventListener('click', function () {
         remove('#popup-add');
     });
     return find('#popup-table-div');
 }
 
-function createTable(loc, titles, height=1) {
+function createTable(loc, titles, height = 1) {
     createTag(loc, 'table', 'create-table', 'table portal-table table-striped ng-table');
     createTag(find('#create-table'), 'thead');
     for (var i = 0; i < titles.length; i++) {
@@ -531,6 +533,21 @@ function createTable(loc, titles, height=1) {
     return find('#create-table');
 }
 
+function createTableVertical(loc, titles, spaces = 1) {
+    createTag(loc, 'table', 'create-table', 'table portal-table table-striped ng-table');
+    for (var h = 0; h < titles.length; h++) {
+        var head = createTagAppend(find('#create-table'), 'thead');
+        var tr = createTag(head, 'tr', 'thead-tr-' + h, 'header-row');
+        var th = createTag(tr, 'th', 'thead-tr-th-' + h, 'center-data min-150');
+        var div = createTag(th, 'div', 'thead-tr-th-title-' + h, '', titles[h]);
+        var tbody = createTagAppend(find('#create-table'), 'tbody');
+        for (var d = 0; d < spaces; d++) {
+            tr = createTagAppend(tbody, 'tr', 'table-tr-' + h + '-' + d);
+            createTagAppend(tr, 'td', 'table-td-' + h + '-' + d, 'center-data min-150');
+        }
+    }
+}
+
 const sleep = (milliseconds) => {
-  return new Promise(resolve => setTimeout(resolve, milliseconds))
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
