@@ -21,14 +21,11 @@ var NORMAL = 0;
 // }
 var AutofillWaiter = new Waiter();
 AutofillWaiter.addSingle('autofill-run', function() {
-    if (!checkURL('https://portal.ubif.net/pos/checkout-new/')) {
+    if (!checkURL('https://portal.ubif.net/pos/checkout-new/') || !getData('autorun-run')) {
         console.log('Closing AutoFill Script');
-        AutofillWaiter.clearSingle('autofill-run');
-        AutofillWaiter.clearSingle('auto-button-update');
-        AutofillWaiter.clearSingle('create-note-button');
-        AutofillWaiter.clearSingle('checkout-popup');
         AutofillWaiter.clearAllSingles("Autofill");
         AutofillWaiter.clearAllTables();
+        return;
     }
     if (!checkExist('#createnote')) {
         console.log('Add Create Note If')

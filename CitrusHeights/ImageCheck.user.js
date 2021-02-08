@@ -17,10 +17,11 @@ var site = 'https://portal.ubif.net/pos/checkout-new/';
 var textarea_selector = 'div.timeline-content textarea';
 var ImageWaiter = new Waiter();
 ImageWaiter.addSingle('image-checker', function() {
-    if (!checkURL(site) && !checkExist(textarea_selector)) {
+    if ((!checkURL(site) && !checkExist(textarea_selector)) || !getData('image-check-run')) {
         ImageWaiter.clearAllSingles("ImageWaiter");
         ImageWaiter.clearAllTables();
         ignored = false;
+        return;
     } else if (checkURL(site) && checkExist(textarea_selector) && !checkExist('span.auto-note img')) {
         // if (!ignored) {
         //     disablePrint();

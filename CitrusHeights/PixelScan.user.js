@@ -14,8 +14,10 @@
 // ==/UserScript==
 var PixelWaiter = new Waiter();
 PixelWaiter.addSingle("pixel-scan-run", function() {
-    if (!checkURL('https://portal.ubif.net/pos/checkout-new/')) {
-        PixelWaiter.clearSingle("pixel-scan-run");
+    if (!checkURL('https://portal.ubif.net/pos/checkout-new/') || !getData('pixel-scan-run')) {
+        PixelWaiter.clearAllTables();
+        PixelWaiter.clearAllSingles("pixel-scan-run");
+        return;
     }
     if (findByAttribute('a', 'href', 'https://sites.google.com/a/ubreakifix.com/ubifdiag/') && !checkExist('#pixel_scan_button')) {
         var button = createTagAppend(findByAttribute('a', 'href', ''), 'button', 'pixel_scan_button', 'btn btn-confirm', 'Pixel Scan Data');

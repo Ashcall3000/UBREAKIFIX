@@ -17,12 +17,13 @@ const BuybackWaiter = new Waiter();
 var buyback_size = 0;
 BuybackWaiter.addSingle('multi-buyback-run', function() {
     console.log('Multi Buyback Running');
-    if (!checkURL('https://portal.ubif.net/pos/inventory')) {
+    if (!checkURL('https://portal.ubif.net/pos/inventory') || !getData('multibuyback-run')) {
         buyback_list = [];
         buyback_size = 0;
         if (localStorage['buyback-length'] <= 0) {
             BuybackWaiter.clearAllSingles("BuyBack");
             BuybackWaiter.clearAllTables();
+            return;
         }
     } else {
         if (checkExist('div.header-buttons') && !checkExist('#multi-buyback-button')) {

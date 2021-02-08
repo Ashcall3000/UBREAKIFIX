@@ -17,8 +17,10 @@ var ItemSearchWaiter = new Waiter();
 ItemSearchWaiter.addSingle('item-search-run', function() {
     var html_to_add = '<div id="custom_search_div" class="custom-search col-xs-12 col-sm-12" style="margin-bottom:10px;"><div id="search-dropdown-div" class="col-xs-12 col-sm-2"><select id="item-select"><option value="Work Order">Work Order</option><option value="Part Order">Purchase Order</option><option value="Item">Exact Item</option></select></div><div id="search-input-div" class="col-xs-12 col-sm-9"><input type="text" id="item-search" name="item-search" placeholder="Search for Exact Item"></div><div id="search-button-div" class="col-xs-12 col-sm-1"><button id="search-button" type="button" class="btn btn-confirm fastclickable">Search Item</button></div></div>';
     if (checkExist('.portal-table-buttons')) {
-        if (!checkURL("https://portal.ubif.net/pos/inventory") && !checkExist('#item-dropdown-div')) {
-            ItemSearchWaiter.clearSingle('item-search-run');
+        if ((!checkURL("https://portal.ubif.net/pos/inventory") && !checkExist('#item-dropdown-div')) || !getData('item-search-run')) {
+            ItemSearchWaiter.clearAllSingles('Item Searcher');
+            ItemSearchWaiter.clearAllTables();
+            return;
         }
         if (checkURL("https://portal.ubif.net/pos/inventory") && !checkExist('#item-dropdown-div')) {
             var divs = findAll('.portal-table-buttons div');

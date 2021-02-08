@@ -1,4 +1,4 @@
-//#version 1.0
+//#version 1.1
 /**
  * find
  * function to find an element by Css selector, if element is given
@@ -546,6 +546,18 @@ function createTableVertical(loc, titles, spaces = 1) {
             createTagAppend(tr, 'td', 'table-td-' + h + '-' + d, 'center-data min-150');
         }
     }
+}
+
+function getData(key) {
+    var value = window.localStorage.getItem(key);
+    if (value != null) {
+        return value;
+    }
+    return false;
+}
+
+function setData(key, value) {
+    window.localStorage.setItem(key, value);
 }
 
 const sleep = (milliseconds) => {

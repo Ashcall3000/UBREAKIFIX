@@ -50,7 +50,11 @@ var prompts = [
     "Describe what the issue with the customers device?"
 ];
 
-var check_in_run = setInterval(function() {
+var check_in_run = setInterval(function () {
+    if (!getData('checkin-run')) {
+        clearInterval(check_in_run);
+        return;
+    }
     if (checkExist('#check-in-button')) {
         clearInterval(check_in_run);
     }
