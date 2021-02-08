@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Settings
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Controlls Settings for the various scripts
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -28,6 +28,7 @@ SettingWaiter.addSingle('settings-run', function () {
             createTag(popup_bottom, 'button', 'save-button', 'btn btn-success fastclickable pull-right', 'Save Settings').addEventListener('click', saveSettings);
             createTagAppend(popup_bottom, 'button', 'download-button', 'btn blue pull-left left-icon fastclickable', 'Download Scripts', 'background-color: rgb(38, 156, 216); color: white;');
             createTag(find('#download-button'), 'span', '', 'fa fa-fw fa-download');
+            createSettingFillin();
         });
     }
 });
@@ -38,16 +39,20 @@ var titles = ['Run Autofill Script', 'Run Image Checker Script', 'Run Item Searc
 var run_titles = ['autofill-run', 'image-checker-run', 'item-search-run', 'pixel-scan-run', 'checkin-run', 'workorder-issue-run'];
 
 function createSettingFillin() {
-    for (var i = 0; i < value.length; i++) {
+    for (var i = 0; i < values.length; i++) {
+        console.log(values[i]);
         var td = find('#table-td-' + i + '-0');
         var div = createTag(td, 'div', '', 'pull-left');
         createInput(div, 'checkbox', values[i], '', ids[i], 'pull-left').checked = true;
         createTag(div, 'p', '', 'pull-left', titles[i]);
+        var id_string = '#' + ids[i];
+        find(id_string).checked = getData(run_titles[i]);
     }
 }
 
 function saveSettings() {
     for (var i = 0; i < value.length; i++) {
-        setData(run_titles[i], find('#' + ids[i]).checked);
+        var id_string = '#' + ids[i];
+        setData(run_titles[i], find(id_string).checked);
     }
 }
