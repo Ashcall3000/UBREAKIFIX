@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.8
+// @version      1.1.9
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -413,17 +413,15 @@ function createWorkOrderPage() {
         console.log('Table Number:', table_number);
         if (!findByText('button', 'Create Work Order')) {
             // Might be samsung lets check
-            if (findByText('button', 'Out Of Warranty')) {
-                // It's a samsung
-                if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
-                    findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
-                }
-                if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
-                    find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
-                    runAngularTrigger('div.warranty-reason > select', 'change');
-                }
-                checkButtonClick(table_number, 'Out Of Warranty');
+            // It's a samsung
+            if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
+                findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
             }
+            if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
+                find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
+                runAngularTrigger('div.warranty-reason > select', 'change');
+            }
+            checkButtonClick(table_number, 'Out Of Warranty');
         } else {
             // Not a samsung
             checkButtonClick(table_number, 'Create Work Order');
@@ -532,7 +530,10 @@ function workOrderPage() {
     });
     Waiter.addTable(function(table_number) {
         if (checkExist('div.scan-items-modal input')) {
-            setField(find('div.scan-items-modal input'), 'input', window.localStorage['part-serial']);
+            setField('div.scan-items-modal input', 'input', window.localStorage['part-serial']);
+            if (find('div.scan-items-modal input').value == "") {
+                setField('div.scan-items-modal input', 'input', 'Failed');
+            }
             Waiter.clearTable(table_number);
         }
     });
@@ -664,14 +665,10 @@ function createScanner() {
 var note_button = '#paneled-side-bar > div > div.bar-buttons > button.btn.blue.fastclickable';
 
 function iPhoneinProgress() {
+    if (!Waiter.isEmpty()) {
+        Waiter.clearAllTables();
+    }
     createNote('Repair in Progress', 'Device is being repaired.');
-    Waiter.addTable(function (table_number) {
-        if (checkExist('div.toast-message')) {
-            sleep(250).then(() => {
-                Waiter.clearTable(table_number)
-            })
-        }
-    });
     Waiter.addCheckButtonTable('Create Repair Ticket');
     Waiter.addCheckButtonTable('Proceed');
 }
