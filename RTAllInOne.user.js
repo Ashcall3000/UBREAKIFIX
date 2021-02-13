@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.1.9
+// @version      1.2.0
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -529,10 +529,10 @@ function workOrderPage() {
         checkButtonClick(table_number, 'Cannot Scan Label');
     });
     Waiter.addTable(function(table_number) {
-        if (checkExist('div.scan-items-modal input')) {
-            setField('div.scan-items-modal input', 'input', window.localStorage['part-serial']);
-            if (find('div.scan-items-modal input').value == "") {
-                setField('div.scan-items-modal input', 'input', 'Failed');
+        if (checkExist('div.barcode-scan input')) {
+            setField('div.barcode-scan input', 'input', window.localStorage['part-serial']);
+            if (find('div.barcode-scan input').value == "") {
+                setField('div.barcode-scan input', 'input', 'Failed');
             }
             Waiter.clearTable(table_number);
         }
@@ -687,7 +687,7 @@ function iPhoneCloseTicket() {
         if (checkExist('div.toast-message')) {
             sleep(250).then(() => {
                 Waiter.clearTable(table_number)
-            })
+            });
         }
     });
     Waiter.addTable(function(table_number) {
@@ -713,7 +713,9 @@ function inProgressSamsung() {
     Waiter.addCheckButtonTable('Create Repair Ticket');
     Waiter.addCheckButtonTable('Close', '.modal-dialog button');
     Waiter.addTable(function(table_number) {
-        createNote('Repair in Progress', 'Device is being repaired.');
+        sleep(1000).then(() => {
+            createNote('Repair in Progress', 'Device is being repaired.');
+        });
         Waiter.clearAllTables();
     });
 }
