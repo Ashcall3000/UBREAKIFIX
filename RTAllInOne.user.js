@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -245,11 +245,18 @@ function updateLeadTable() {
         }
         find('#item-data').innerText = item;
     }
+    var strongs = findAllByText('strong', 'Label');
+    if (strongs.length > 1) {
+        window.localStorage['parts_amount'] = 2;
+        window.localStorage['part-serial2'] = strongs[1].parentElement.innerText.substring(7);
+    } else {
+        window.localStorage['parts_amount'] = 1;
+    }
+    window.localStorage['part-serial'] = strongs[0].parentElement.innerText.substring(7);
     var serial = findByAttribute('td', 'ng-if', '!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)', '', '', find('#old-table'));
     if (serial) {
         serial = serial.innerText.substring(6);
         find('#serial-data').innerText = serial;
-        window.localStorage['part-serial'] = serial;
     }
     var amount = findByAttribute('span', 'ng-if', '!saleItem.inventory.store_item.item.is_service', '', '', find('#old-table'));
     if (amount != null) {
@@ -531,14 +538,22 @@ function workOrderPage() {
     Waiter.addTable(function(table_number) {
         if (checkExist('div.barcode-scan input')) {
             setField('div.barcode-scan input', 'input', window.localStorage['part-serial']);
-            if (find('div.barcode-scan input').value == "") {
-                setField('div.barcode-scan input', 'input', 'Failed');
-            }
             Waiter.clearTable(table_number);
         }
     });
+    if (window.localStorage['parts-amount'] > 1) {
+        Waiter.addTable(function (table_number) {
+            checkButtonClick(table_number, 'Cannont Scan Label');
+        });
+        Waiter.addTable(function (table_number) {
+            if (checkExist('div.barcode-scan input')) {
+                setField('div.barcode-scan input', 'input', window.localStorage['part-serial2']);
+                Waiter.clearTable(table_number);
+            }
+        });
+    }
     Waiter.addTable(function(table_number) {
-        checkButtonClick(table_number, 'Submit');
+        checkButtonClick(table_number, 'Proceed');
     });
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function() {
@@ -713,10 +728,10 @@ function inProgressSamsung() {
     Waiter.addCheckButtonTable('Create Repair Ticket');
     Waiter.addCheckButtonTable('Close', '.modal-dialog button');
     Waiter.addTable(function(table_number) {
-        sleep(1000).then(() => {
+        if (checkExist('div.extra-actions > select > option')) {
             createNote('Repair in Progress', 'Device is being repaired.');
-        });
-        Waiter.clearAllTables();
+            Waiter.clearAllTables();
+        }
     });
 }
 
@@ -803,7 +818,12 @@ function samsungCloseTicket() {
 }
 
 // Total sleep time 350
-function createNote(status, text, sleep_time=0) {
+//#endregion
+//#region HelperFunctions
+/**
+            Helper Functions
+*/
+function createNote(status, text, sleep_time = 0) {
     find(note_button).click();
     sleep(sleep_time + 250).then(() => {
         if (!checkExist('#paneled-side-bar.closed')) {
@@ -833,11 +853,6 @@ function createNote(status, text, sleep_time=0) {
     });
     return sleep_time + 600;
 }
-//#endregion
-//#region HelperFunctions
-/**
-            Helper Functions
-*/
 
 function checkButtonClick(table_number, title, selector='button') {
     console.log('Table Number:', table_number);
