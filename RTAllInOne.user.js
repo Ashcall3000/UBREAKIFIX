@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -533,6 +533,9 @@ function workOrderPage() {
         }
     }, 1000);
     Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Scan Parts');
+    })
+    Waiter.addTable(function(table_number) {
         checkButtonClick(table_number, 'Cannot Scan Label');
     });
     Waiter.addTable(function(table_number) {
@@ -540,6 +543,9 @@ function workOrderPage() {
             setField('div.barcode-scan input', 'input', window.localStorage['part-serial']);
             Waiter.clearTable(table_number);
         }
+    });
+    Waiter.addTable(function(table_number) {
+        checkButtonClick(table_number, 'Submit');
     });
     if (window.localStorage['parts-amount'] > 1) {
         Waiter.addTable(function (table_number) {
@@ -550,6 +556,9 @@ function workOrderPage() {
                 setField('div.barcode-scan input', 'input', window.localStorage['part-serial2']);
                 Waiter.clearTable(table_number);
             }
+        });
+        Waiter.addTable(function(table_number) {
+            checkButtonClick(table_number, 'Submit');
         });
     }
     Waiter.addTable(function(table_number) {
