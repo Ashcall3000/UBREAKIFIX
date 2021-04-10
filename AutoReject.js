@@ -1,6 +1,6 @@
 var training = {};
 var test_attempts = 0;
-find('#kb div.hidden button').click();
+find("button.btn-confirm").click();
 var cheater_run = setInterval(function() {
     if (checkExist('.modal-body h2')) {
         if (findByAttribute('h2', 'ng-bind-html', 'question')) {
@@ -29,7 +29,7 @@ var cheater_run = setInterval(function() {
             for (var i = 0; i < wrong_questions.length; i++) {
                 var text = wrong_questions[i].textContent;
                 if (text in training) {
-                    training[text]++;
+                    training[text] = training[text];
                 }
             }
             test_attempts++;
@@ -43,11 +43,15 @@ var cheater_run = setInterval(function() {
             });
         }
     }
+    if (checkExist('#kb div.hidden button') && !checkExist('#troll-button')) {
+        console.log("Running");
+        remove('#kb div.hidden button');
+        createTag(find('#kb div.hidden'), 'button', 'troll-button', 'btn btn-confirm fastclickable', 'Take Quiz');
+        find('#troll-button').addEventListener('click', function(e) {
+            window.location.replace(video_link);
+        });
+    }
 }, 500);
-
-
-
-
 
 
 /**
@@ -123,6 +127,8 @@ function findAllByText(css, text, element=false) {
     }
     return list;
 }
+
+var video_link = "https://www.youtube.com/embed/o1eHKf-dMwo?ab_channel=10HourLoopVideos%3Bmute%3D1?rel=0&amp;autoplay=1;fs=0;autohide=0;hd=0;mute=1;";
 
 /**
  * findSibling
