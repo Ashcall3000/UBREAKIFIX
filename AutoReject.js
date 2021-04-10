@@ -1,6 +1,6 @@
 var training = {};
 var test_attempts = 0;
-find("button.btn-confirm").click();
+find('#kb div.hidden button').click();
 var cheater_run = setInterval(function() {
     if (checkExist('.modal-body h2')) {
         if (findByAttribute('h2', 'ng-bind-html', 'question')) {
