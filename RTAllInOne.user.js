@@ -860,10 +860,10 @@ function createNote(status, text, sleep_time = 0) {
         }
         /*sleep(sleep_time + 250).then(() => {
             findByText('button', 'Create Note').click();
-        });*/
+        });
         sleep(sleep_time + 350).then(() => {
             find(note_button).click();
-        });
+        });*/
     });
     return sleep_time + 600;
 }
