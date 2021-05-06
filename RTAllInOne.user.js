@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.3
+// @version      1.2.4
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -794,6 +794,11 @@ function samsungCloseTicket() {
             if (find('#private').checked) {
                 find('#private').click();
             }
+            Waiter.clearTable(table_number);
+        }
+    });
+    Waiter.addTable(function (table_number) {
+        if (findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id')) {
             var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
             var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
             var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
@@ -807,12 +812,9 @@ function samsungCloseTicket() {
             runAngularTrigger('#selector-2', 'click');
             selector_3.value = 1;
             runAngularTrigger('#selector-3', 'change');
-            sleep(250).then(() => {
-                findByText('button', 'Create Note').click();
-                Waiter.clearTable(table_number);
-            });
+            Waiter.clearTable(table_number);
         }
-    });
+    })
     Waiter.addTable(function (table_number) {
         if (!checkButtonClick(table_number, 'Yes')) {
             if (findByText('button.btn-confirm', 'Add')) {
