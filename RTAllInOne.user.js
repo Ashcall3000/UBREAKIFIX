@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.7
+// @version      1.2.8
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -166,10 +166,43 @@ function leadPage() {
             createLeadTable();
             // Update Data in New Table
             updateLeadTable();
+            // Create Dropdown menu
+            createDropList();
             return RAN_WORKED;
         }
     }
     return RAN_WAITING;
+}
+
+function createDropList() {
+    var div = createTagAppend(find('div.move-down-10'), 'div', 'code-dropdown');
+    createTag(div, 'select', 'code-select');
+    createTag(find('#code-select'), 'option', '', '', 'None').value = 'NONE';
+    createTagAppend(find('#code-select'), 'option', '', '', 'No Repair Out Of Scope').value = 'NRS';
+    createTagAppend(find('#code-select'), 'option', '', '', 'Non Matching IMEI').value = 'NRN';
+    createTagAppend(find('#code-select'), 'option', '', '', 'Location Not Eligible').value = 'LNE';
+    createTagAppend(find('#code-select'), 'option', '', '', 'Customer No Show').value = 'CNS';
+    createTagAppend(find('#code-select'), 'option', '', '', 'Customer Declined Repair').value = 'CDR';
+    createTagAppend(find('#code-select'), 'option', '', '', 'Parts Out Of Stock').value = 'NRP';
+    createTagAppend(div, 'button', 'code-button', 'btn btn-confirm fastclickable', 'Create Note', 'width:100%');
+    find('#code-button').addEventListener('click', function() {
+        var code = find('#code-select').value;
+        if (code != "NONE") {
+            if (checkExist('#paneled-side-bar.closed')) {
+                find(note_button).click();
+            }
+            sleep(500).then(() => {
+                find('.note-placeholder').style = 'display: none;';
+                find('.note-editable').innerHTML = "CODE: " + code;
+                setField('.note-editable', 'input', "CODE: " + code);
+                find('select.editor-add-in').click();
+                runAngularTrigger('div.extra-actions > select', 'change');
+                sleep(250).then(() => {
+                    findByText('button', 'Create Note').click();
+                });
+            });
+        }
+    });
 }
 
 function createLeadTable() {
