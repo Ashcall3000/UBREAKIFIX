@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.6
+// @version      1.2.7
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -721,7 +721,7 @@ function iPhoneCloseTicket() {
     });
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
-            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer.', 1000);
+            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer. CODE: RCM', 1000);
             Waiter.clearTable(table_number);
         }
     });
@@ -779,26 +779,12 @@ function samsungCloseTicket() {
             if (!checkExist('#paneled-side-bar.closed')) {
                 var els = findAll('div.extra-actions > select > option');
                 for (var i = 0; i < els.length; i++) {
-                    if (els[i].innerText == 'Repaired - RFP') {
+                    if (els[i].textContent == 'Repaired - RFP') {
                         find('select.editor-add-in').value = i;
                         break;
                     }
                 }
             }
-            // write in progress in field
-            find('.note-placeholder').style = 'display: none;';
-            find('.note-editable').innerHTML = 'Device is repaired and ready to be returned to the customer.';
-            setField('.note-editable', 'input', 'Device is repaired and ready to be returned to the customer.');
-            find('select.editor-add-in').click();
-            runAngularTrigger('div.extra-actions > select', 'change');
-            if (find('#private').checked) {
-                find('#private').click();
-            }
-            Waiter.clearTable(table_number);
-        }
-    });
-    Waiter.addTable(function (table_number) {
-        if (findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id')) {
             var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
             var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
             var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
@@ -812,9 +798,17 @@ function samsungCloseTicket() {
             runAngularTrigger('#selector-2', 'click');
             selector_3.value = 1;
             runAngularTrigger('#selector-3', 'change');
+            find('.note-placeholder').style = 'display: none;';
+            find('.note-editable').innerHTML = 'Device is repaired and ready to be returned to the customer. CODE: RCM';
+            setField('.note-editable', 'input', 'Device is repaired and ready to be returned to the customer. CODE: RCM');
+            find('select.editor-add-in').click();
+            runAngularTrigger('div.extra-actions > select', 'change');
+            if (find('#private').checked) {
+                find('#private').click();
+            }
             Waiter.clearTable(table_number);
         }
-    })
+    });
     Waiter.addTable(function (table_number) {
         if (!checkButtonClick(table_number, 'Yes')) {
             if (findByText('button.btn-confirm', 'Add')) {
@@ -843,32 +837,11 @@ function createNote(status, text, sleep_time = 0) {
     if (checkExist('#paneled-side-bar.closed')) {
         find(note_button).click();
     }
-    Waiter.addTable(function (table_number) {
+    sleep(sleep_time + 500).then(() => {
         if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
             var els = findAll('div.extra-actions > select > option');
             for (var i = 0; i < els.length; i++) {
-                if (els[i].innerText == status) {
-                    find('select.editor-add-in').value = i;
-                    break;
-                }
-            }
-            // write in progress in field
-            find('.note-placeholder').style = 'display: none;';
-            find('.note-editable').innerHTML = text;
-            setField('.note-editable', 'input', text);
-            find('select.editor-add-in').click();
-            runAngularTrigger('div.extra-actions > select', 'change');
-            if (find('#private').checked) {
-                find('#private').click();
-            }
-            Waiter.clearTable(table_number);
-        }
-    });
-    /*sleep(sleep_time + 500).then(() => {
-        if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
-            var els = findAll('div.extra-actions > select > option');
-            for (var i = 0; i < els.length; i++) {
-                if (els[i].innerText == status) {
+                if (els[i].textContent == status) {
                     find('select.editor-add-in').value = i;
                     break;
                 }
@@ -889,7 +862,7 @@ function createNote(status, text, sleep_time = 0) {
         sleep(sleep_time + 350).then(() => {
             find(note_button).click();
         });
-    });*/
+    });
     return sleep_time + 600;
 }
 
