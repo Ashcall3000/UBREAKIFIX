@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.4
+// @version      1.2.5
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -840,9 +840,31 @@ function samsungCloseTicket() {
             Helper Functions
 */
 function createNote(status, text, sleep_time = 0) {
-    find(note_button).click();
-    sleep(sleep_time + 500).then(() => {
-        if (!checkExist('#paneled-side-bar.closed')) {
+    if (checkExist('#paneled-side-bar.closed'))
+        find(note_button).click();
+    Waiter.addTable(function (table_number) {
+        if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
+            var els = findAll('div.extra-actions > select > option');
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].innerText == status) {
+                    find('select.editor-add-in').value = i;
+                    break;
+                }
+            }
+            // write in progress in field
+            find('.note-placeholder').style = 'display: none;';
+            find('.note-editable').innerHTML = text;
+            setField('.note-editable', 'input', text);
+            find('select.editor-add-in').click();
+            runAngularTrigger('div.extra-actions > select', 'change');
+            if (find('#private').checked) {
+                find('#private').click();
+            }
+            Waiter.clearTable(table_number);
+        }
+    });
+    /*sleep(sleep_time + 500).then(() => {
+        if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
             var els = findAll('div.extra-actions > select > option');
             for (var i = 0; i < els.length; i++) {
                 if (els[i].innerText == status) {
@@ -866,7 +888,7 @@ function createNote(status, text, sleep_time = 0) {
         sleep(sleep_time + 350).then(() => {
             find(note_button).click();
         });*/
-    });
+    //});
     return sleep_time + 600;
 }
 
