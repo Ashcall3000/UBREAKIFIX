@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.5
+// @version      1.2.6
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -103,7 +103,7 @@ var iphone_list = [
 ];
 // List of Samsung Galaxy Device Names
 var samsung_list = [
-    'Samsung Galaxy Note 21 Ultra'
+    'Samsung Galaxy Note 21 Ultra',
     'Samsung Galaxy Note 21',
     'Samsung Galaxy S21 Ultra',
     'Samsung Galaxy S21 Plus',
@@ -840,8 +840,9 @@ function samsungCloseTicket() {
             Helper Functions
 */
 function createNote(status, text, sleep_time = 0) {
-    if (checkExist('#paneled-side-bar.closed'))
+    if (checkExist('#paneled-side-bar.closed')) {
         find(note_button).click();
+    }
     Waiter.addTable(function (table_number) {
         if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
             var els = findAll('div.extra-actions > select > option');
@@ -882,13 +883,13 @@ function createNote(status, text, sleep_time = 0) {
         if (find('#private').checked) {
             find('#private').click();
         }
-        /*sleep(sleep_time + 250).then(() => {
+        sleep(sleep_time + 250).then(() => {
             findByText('button', 'Create Note').click();
         });
         sleep(sleep_time + 350).then(() => {
             find(note_button).click();
-        });*/
-    //});
+        });
+    });*/
     return sleep_time + 600;
 }
 
