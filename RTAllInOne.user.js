@@ -809,7 +809,7 @@ function samsungCloseTicket() {
                 Waiter.clearTable(table_number);
             })
         }
-    })
+    });
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
             if (!checkExist('#paneled-side-bar.closed')) {
@@ -858,7 +858,7 @@ function samsungCloseTicket() {
             }
             Waiter.clearTable(table_number);
         }
-    })
+    });
     Waiter.addCheckButtonTable('Create Note');
     Waiter.addTable(function (table_number) {
         if (!checkButtonClick(table_number, 'Yes')) {
