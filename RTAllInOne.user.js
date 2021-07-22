@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.2.8
+// @version      1.2.9
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -80,9 +80,9 @@ var workorder_ran = RAN_WAITING;
 */
 // List of iPhone Device Names
 var iphone_list = [
+    'iPhone 12 Pro Max',
     'iPhone 12 Pro',
     'iPhone 12 Mini',
-    'iPhone 12 Pro Max',
     'iPhone 12',
     'iPhone SE (2nd Gen)',
     'iPhone 11 Pro Max',
@@ -602,6 +602,9 @@ function workOrderPage() {
     Waiter.addTable(function (table_number) {
         checkButtonClick(table_number, 'Proceed');
     });
+    Waiter.addTable(function (table_number) {
+        checkButtonClick(table_number, 'Generate Ticket');
+    });
     // add button to open scan dialog if there is a part that hasn't been scanned yet
     var workorder_scan_button_run = setInterval(function () {
         if (!checkExist('#scan-camera-button') && findByText('h3.modal-title', 'VERIFY ITEM LABELS/SERIALS')
@@ -754,7 +757,7 @@ function iPhoneCloseTicket() {
     });
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
-            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer. CODE: RCM', 1000);
+            createNote('Repaired - RFP', 'RCM', 1000);
             Waiter.clearTable(table_number);
         }
     });
@@ -818,6 +821,20 @@ function samsungCloseTicket() {
                     }
                 }
             }
+            Waiter.clearTable(table_number);
+        }
+    });
+    Waiter.addTable(function (table_number) {
+        if (checkExist('span.bg-quality-inspection')) {
+            if (!checkExist('#paneled-side-bar.closed')) {
+                var els = findAll('div.extra-actions > select > option');
+                for (var i = 0; i < els.length; i++) {
+                    if (els[i].textContent == 'Repaired - RFP') {
+                        find('select.editor-add-in').value = i;
+                        break;
+                    }
+                }
+            }
             var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
             var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
             var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
@@ -832,8 +849,8 @@ function samsungCloseTicket() {
             selector_3.value = 1;
             runAngularTrigger('#selector-3', 'change');
             find('.note-placeholder').style = 'display: none;';
-            find('.note-editable').innerHTML = 'Device is repaired and ready to be returned to the customer. CODE: RCM';
-            setField('.note-editable', 'input', 'Device is repaired and ready to be returned to the customer. CODE: RCM');
+            find('.note-editable').innerHTML = 'RCM';
+            setField('.note-editable', 'input', 'RCM');
             find('select.editor-add-in').click();
             runAngularTrigger('div.extra-actions > select', 'change');
             if (find('#private').checked) {
@@ -841,7 +858,8 @@ function samsungCloseTicket() {
             }
             Waiter.clearTable(table_number);
         }
-    });
+    })
+    Waiter.addCheckButtonTable('Create Note');
     Waiter.addTable(function (table_number) {
         if (!checkButtonClick(table_number, 'Yes')) {
             if (findByText('button.btn-confirm', 'Add')) {
