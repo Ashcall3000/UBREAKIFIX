@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.0
+// @version      1.3.1
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -220,27 +220,11 @@ function createLeadTable() {
     // SKU Header Row
     tr = createTagAppend(main_table, 'tr', '', 'header-row');
     thd = createTag(tr, 'th', '', 'center-data');
-    createTag(thd, 'div', '', '', 'SKU');
+    createTag(thd, 'div', '', '', 'SKU & Serial');
     // SKU Data Row
     tr = createTagAppend(main_table, 'tr', '', '');
     thd = createTag(tr, 'td', '', 'center-data');
     createTag(thd, 'span', 'sku-data', '');
-    // Serial Header Row
-    tr = createTagAppend(main_table, 'tr', '', 'header-row');
-    thd = createTag(tr, 'th', '', 'center-data');
-    createTag(thd, 'div', '', '', 'Serial');
-    // Serial Data Row
-    tr = createTagAppend(main_table, 'tr', '', '');
-    thd = createTag(tr, 'td', '', 'center-data');
-    createTag(thd, 'span', 'serial-data', '');
-    // Amount Available Header Row
-    tr = createTagAppend(main_table, 'tr', '', 'header-row');
-    thd = createTag(tr, 'th', '', 'center-data');
-    createTag(thd, 'div', '', '', 'Available');
-    // Amount Available Data Row
-    tr = createTagAppend(main_table, 'tr', '', '');
-    thd = createTag(tr, 'td', '', 'center-data');
-    createTag(thd, 'span', 'available-data', '');
     // Remove Part Header Row
     tr = createTagAppend(main_table, 'tr', '', 'header-row');
     thd = createTag(tr, 'th', '', 'center-data');
@@ -267,10 +251,12 @@ function updateLeadTable() {
     if (findByText('div.device-detail', 'IMEI')) {
         imei = find('div.details', findByText('div.device-detail', 'IMEI')).innerText;
     }
+    var item_text_number = '';
     var sku = findByAttribute('td', 'ng-if', 'isLeadReserveOrNoReserve() || isReturn()', '', '', find('#old-table'));
     if (sku != null) {
         sku = sku.innerText;
-        find('#sku-data').innerText = sku;
+        // find('#sku-data').innerText = sku;
+        item_text_number = sku + ' -';
     }
     var device_name = findSibling('label', 'div.details', 'Device').textContent;
     var item = findByAttribute('td', 'ng-click', 'editSaleItem(saleItem, true)', '', '', find('#old-table'));
@@ -294,11 +280,8 @@ function updateLeadTable() {
     var serial = findByAttribute('td', 'ng-if', '!isSaleItemService(saleItem) && hasSaleItemLabel(saleItem)', '', '', find('#old-table'));
     if (serial) {
         serial = serial.innerText.substring(6);
-        find('#serial-data').innerText = serial;
-    }
-    var amount = findByAttribute('span', 'ng-if', '!saleItem.inventory.store_item.item.is_service', '', '', find('#old-table'));
-    if (amount != null) {
-        amount = amount.innerText;
+        //find('#serial-data').innerText = serial;
+        item_text_number += serial;
     }
     if (checkExist('#mobile-table')) {
         if (item) {
@@ -307,14 +290,9 @@ function updateLeadTable() {
             find('#item-data').innerText = "Error";
         }
         if (sku) {
-            find('#sku-data').innerText = sku;
+            find('#sku-data').innerText = item_text_number;
         } else {
             find('#sku-data').innerText = "Error";
-        }
-        if (amount) {
-            find('#available-data').innerText = amount;
-        } else {
-            find('#available-data').innerTExt = "Error";
         }
     }
 }
@@ -459,8 +437,8 @@ function createWorkOrderPage() {
         if (!findByText('button', 'Create Work Order')) {
             // Might be samsung lets check
             // It's a samsung
-            if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
-                findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
+            if (findByText('div', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
+                findByText('div', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
             }
             if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
                 find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
@@ -602,125 +580,8 @@ function workOrderPage() {
     Waiter.addTable(function (table_number) {
         checkButtonClick(table_number, 'Proceed');
     });
-    // add button to open scan dialog if there is a part that hasn't been scanned yet
-    var workorder_scan_button_run = setInterval(function () {
-        if (!checkExist('#scan-camera-button') && findByText('h3.modal-title', 'VERIFY ITEM LABELS/SERIALS')
-            && findByAttribute('img.fastclickable', 'ng-click', 'openScanItemsModal()') && checkExist('div.barcode-start')) {
-            // Create button
-            createTagBefore(find('div.barcode-start'), 1, 'button', 'scan-camera-button', 'btn btn-cancel fastclickable', 'Open Scanner', 'width: 100%');
-            find('#scan-camera-button').addEventListener('click', function () {
-                if (findByText('button', 'Cannot Scan Label')) {
-                    findByText('button', 'Cannot Scan Label').id = 'scan-label-button';
-                    find('#scan-label-button').click();
-                    if (!checkExist('#interactive')) {
-                        createScanner();
-                    }
-                }
-            });
-        } else if (checkExist('div.scan-sale-items-modal div.modal-row') && !checkExist('#interactive') && !checkExist('#scan-camera-button')) {
-            createTagAppend(find('div.scan-sale-items-modal div.modal-row'), 'button', 'scan-camera-button', 'btn btn-cancel fastclickable', 'Open Scanner', 'width: 100%');
-            find('#scan-camera-button').addEventListener('click', function () {
-                if (!checkExist('#interactive')) {
-                    createScanner();
-                }
-            });
-        }
-        if (checkExist('#interactive') && checkExist('#scan-camera-button')) {
-            remove('#scan-camera-button');
-        }
-    }, 500);
-
-    // page opens to scan items
-    // Add button to open camera and scan part to the dialog
-    // auto click cannot scan label and select field to type in for scanner
-    // Put the Samsung device in progress
-    // check if it's Samsung and if so click Create GSPN Repair Ticket button
-    // click Create Repair Ticket button
-    // click close button
-    // put the repair into progress
-
-}
-
-function createScanner() {
     Waiter.addTable(function (table_number) {
-        if (checkExist('div.barcode-scan input')) {
-            find('div.barcode-scan input').id = 'barcode-scan-field';
-            createTagAppend(findByAttribute('div', 'ng-if', '!isAllInventoryScanned()'), 'div', 'interactive', 'viewport');
-            addHTML('#interactive', '<input type="file" />');
-            addHTML('#interactive', '<video autoplay="true" preload="auto" src(unknown) muted="true" playsinline="true"></video>' +
-                '<canvas class="drawingBuffer" width="640" height="480"');
-
-            createTag(find('#interactive'), 'button', 'stop-camera-button', 'btn btn-cancel fastclickable', 'Close Camera', 'width: 100%');
-            find('#interactive').addEventListener('click', function () {
-                Quagga.stop();
-                remove('#interactive');
-            })
-            Waiter.clearTable(table_number);
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    constraints: {
-                        width: 1280,
-                        height: 720
-                    },
-                    numOfWorkers: 8,
-                    locate: true,
-                    target: document.querySelector('#interactive.viewport')    // Or '#yourElement' (optional)
-                },
-                decoder: {
-                    readers: ["code_128_reader"]
-                },
-                halfSample: false,
-                frequency: 25,
-                patchSize: "medium"
-                // locate: false,
-                // area: {
-                //     top:"50%",
-                //     right: "50%",
-                //     left: "50%",
-                //     bottom: "50%"
-                // }
-            }, function (err) {
-                if (err) {
-                    console.log(err);
-                    return
-                }
-                console.log("Initialization finished. Ready to start");
-                Quagga.start();
-            });
-            console.log('Going to run On Detected');
-            Quagga.onDetected(function (data) {
-                if (data.codeResult) {
-                    if (data.codeResult.code.lenght > 10 && data.codeResult.code.includes('-')) {
-                        setField('#barcode-scan-field', 'input', data.codeResult.code);
-                        Quagga.stop();
-                        remove('#interactive');
-                    } else if (data.codeResult.code.length == 10) {
-                        setField('#barcode-scan-field', 'input', data.codeResult.code);
-                        Quagga.stop();
-                        remove('#interactive');
-                    } else {
-                        setField('#barcode-scan-field', 'input', data.codeResult.code);
-                    }
-                }
-            });
-            // Quagga.onProcessed(function(result) {
-            //     if (result.codeResult) {
-            //         if (result.codeResult.code.lenght > 10 && result.codeResult.code.includes('-')) {
-            //             setField('#barcode-scan-field', 'input', result.codeResult.code);
-            //             Quagga.stop();
-            //             remove('#interactive');
-            //         } else if (result.codeResult.code.length == 10) {
-            //             setField('#barcode-scan-field', 'input', result.codeResult.code);
-            //             Quagga.stop();
-            //             remove('#interactive');
-            //         } else {
-            //             setField('#barcode-scan-field', 'input', result.codeResult.code);
-            //         }
-            //     }
-            // });
-        }
+        checkButtonClick(table_number, 'Generate Ticket');
     });
 }
 
@@ -754,7 +615,7 @@ function iPhoneCloseTicket() {
     });
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
-            createNote('Repaired - RFP', 'Device is repaired and ready to be returned to the customer. CODE: RCM', 1000);
+            createNote('Repaired - RFP', 'RCM', 1000);
             Waiter.clearTable(table_number);
         }
     });
@@ -826,28 +687,30 @@ function samsungCloseTicket() {
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
             if (!checkExist('#paneled-side-bar.closed')) {
-                var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
-                var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
-                var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
-                selector_1.id = 'selector-1';
-                selector_2.id = 'selector-2';
-                selector_3.id = 'selector-3';
-                selector_1.value = 8;
-                runAngularTrigger('#selector-1', 'change');
-                selector_2.value = 2;
-                runAngularTrigger('#selector-2', 'change');
-                runAngularTrigger('#selector-2', 'click');
-                selector_3.value = 1;
-                runAngularTrigger('#selector-3', 'change');
-                find('.note-placeholder').style = 'display: none;';
-                find('.note-editable').innerHTML = 'Device is repaired and ready to be returned to the customer. CODE: RCM';
-                setField('.note-editable', 'input', 'Device is repaired and ready to be returned to the customer. CODE: RCM');
-                find('select.editor-add-in').click();
-                runAngularTrigger('div.extra-actions > select', 'change');
-                if (find('#private').checked) {
-                    find('#private').click();
+                if (findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id')) {
+                    var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
+                    var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
+                    var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
+                    selector_1.id = 'selector-1';
+                    selector_2.id = 'selector-2';
+                    selector_3.id = 'selector-3';
+                    selector_1.value = 8;
+                    runAngularTrigger('#selector-1', 'change');
+                    selector_2.value = 2;
+                    runAngularTrigger('#selector-2', 'change');
+                    runAngularTrigger('#selector-2', 'click');
+                    selector_3.value = 1;
+                    runAngularTrigger('#selector-3', 'change');
+                    find('.note-placeholder').style = 'display: none;';
+                    find('.note-editable').innerHTML = 'RCM';
+                    setField('.note-editable', 'input', 'RCM');
+                    find('select.editor-add-in').click();
+                    runAngularTrigger('div.extra-actions > select', 'change');
+                    if (find('#private').checked) {
+                        find('#private').click();
+                    }
+                    Waiter.clearTable(table_number);
                 }
-                Waiter.clearTable(table_number);
             }
         }
     });
