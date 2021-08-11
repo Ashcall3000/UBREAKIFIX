@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.1
+// @version      1.3.2
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -675,6 +675,7 @@ function samsungCloseTicket() {
                 for (var i = 0; i < els.length; i++) {
                     if (els[i].textContent == 'Repaired - RFP') {
                         find('select.editor-add-in').value = i;
+                        runAngularTrigger('div.extra-actions > select', 'change');
                         break;
                     }
                 }
