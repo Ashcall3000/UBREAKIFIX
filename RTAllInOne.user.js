@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.2
+// @version      1.3.3
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -670,37 +670,32 @@ function samsungCloseTicket() {
     });
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
-            if (!checkExist('#paneled-side-bar.closed')) {
-                var els = findAll('div.extra-actions > select > option');
-                for (var i = 0; i < els.length; i++) {
-                    if (els[i].textContent == 'Repaired - RFP') {
-                        find('select.editor-add-in').value = i;
-                        runAngularTrigger('div.extra-actions > select', 'change');
-                        break;
-                    }
-                }
-                sleep(250).then(() => {
-                    Waiter.clearTable(table_number);
-                });
-            }
+            changeStatus('Repaired - RFP');
+            sleep(250).then(() => {
+                Waiter.clearTable(table_number);
+            });
         }
     });
     Waiter.addTable(function (table_number) {
         if (checkExist('span.bg-quality-inspection')) {
             if (!checkExist('#paneled-side-bar.closed')) {
                 if (findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id')) {
+                    var selector_0 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_wty_exception_id');
                     var selector_1 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_category_type_id');
                     var selector_2 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id');
                     var selector_3 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_repair_code_id');
+                    selector_0.id = 'selector-0';
                     selector_1.id = 'selector-1';
                     selector_2.id = 'selector-2';
                     selector_3.id = 'selector-3';
-                    selector_1.value = 8;
+                    selector_0.value = 'number:1';
+                    runAngularTrigger('#selector-0', 'change');
+                    selector_1.value = 'number:9';
                     runAngularTrigger('#selector-1', 'change');
-                    selector_2.value = 2;
+                    selector_2.value = 'number:6';
                     runAngularTrigger('#selector-2', 'change');
                     runAngularTrigger('#selector-2', 'click');
-                    selector_3.value = 1;
+                    selector_3.value = 'number:5';
                     runAngularTrigger('#selector-3', 'change');
                     find('.note-placeholder').style = 'display: none;';
                     find('.note-editable').innerHTML = 'RCM';
@@ -740,26 +735,30 @@ function samsungCloseTicket() {
 /**
             Helper Functions
 */
+function changeStatus(status) {
+    if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
+        var els = findAll('div.extra-actions > select > option');
+        for (var i = 0; i < els.length; i++) {
+            if (els[i].textContent == status) {
+                find('select.editor-add-in').value = els[i].value;
+                break;
+            }
+        }
+    }
+    runAngularTrigger('div.extra-actions > select', 'change');
+}
+
 function createNote(status, text, sleep_time = 0) {
     if (checkExist('#paneled-side-bar.closed')) {
         find(note_button).click();
     }
     sleep(sleep_time + 500).then(() => {
-        if (!checkExist('#paneled-side-bar.closed') && find('div.extra-actions > select > option')) {
-            var els = findAll('div.extra-actions > select > option');
-            for (var i = 0; i < els.length; i++) {
-                if (els[i].textContent == status) {
-                    find('select.editor-add-in').value = i;
-                    break;
-                }
-            }
-        }
+        changeStatus(status);
         // write in progress in field
         find('.note-placeholder').style = 'display: none;';
         find('.note-editable').innerHTML = text;
         setField('.note-editable', 'input', text);
         find('select.editor-add-in').click();
-        runAngularTrigger('div.extra-actions > select', 'change');
         if (find('#private').checked) {
             find('#private').click();
         }
