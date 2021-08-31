@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.3
+// @version      1.3.4
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -441,7 +441,7 @@ function createWorkOrderPage() {
                 findByText('div', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
             }
             if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
-                find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
+                find('div.warranty-reason > select').value = "number:1"; // Set reason as Impact Damage
                 runAngularTrigger('div.warranty-reason > select', 'change');
             }
             checkButtonClick(table_number, 'Out Of Warranty');
