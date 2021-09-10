@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.4
+// @version      1.3.5
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -84,7 +84,7 @@ var iphone_list = [
     'iPhone 12 Mini',
     'iPhone 12 Pro',
     'iPhone 12',
-    'iPhone SE (2nd Gen)',
+    'iPhone SE20',
     'iPhone 11 Pro Max',
     'iPhone 11 Pro',
     'iPhone 11',
@@ -319,6 +319,11 @@ function getDeviceName(text) {
 function selectDevicePage() {
     if (!findByText('button', 'Continue') || findByText('button', 'Continue').disabled) { // Checking to see if we can just create the workorder or not
         if (!checkExist('div.selected') && device_type != '') { // Checking to see if the device is already selected
+            if (device_type.trim() == "Samsung Galaxy Note 8") {
+                device_type = "Samsung Galaxy Note 8 Phone";
+            } else if (device_type.trim() == "iPhone SE20") {
+                device_type = "iPhone SE (2nd Gen)";
+            }
             setField('#device-type-searchbox', 'input', device_type.trim() + ' Repair');
             Waiter.addTable(function (table_number) {
                 console.log('First Table');
@@ -370,26 +375,48 @@ function selectDevicePage() {
             });
         }
         Waiter.addTable(function (table_number) {
-            var imei_field = findByAttribute('input', 'ng-model', 'deviceData.imei'); // Grab the imei field
+            var new_imei_field = false;
+            var imei_field = false;
+            if (findByAttribute('input', 'ng-model', 'checkDigit.entry')) {
+                new_imei_field = true;
+                imei_field = findByAttribute('input', 'ng-model', 'checkDigit.entry');
+            } else {
+                imei_field = findByAttribute('input', 'ng-model', 'deviceData.imei'); // Grab the imei field
+            }
             if (imei_field) { // Check if imei field is on the page or not
                 if (checkExist('div.selected')) { // Double check to make sure device has been selected
                     Waiter.clearTable(table_number); // Stop the interval
-                    if (imei_field.value.length != 15) { // checking if the imie field is already filled
-                        if (imei.length == 15) { // Checking to see if the imei on lead is the full imei
-                            setField(imei_field, 'input', imei);
-                        } else {
-                            setField(imei_field, 'input', imei + '0');
-                            var guess = 1;
-                            var imei_guess = setInterval(function () { // We start guessing what the last digit is
-                                if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) { // checks to see if text invalid is there or not
-                                    if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') { // Checks to see if the Imei is valid or not
-                                        setField(imei_field, 'input', imei + guess.toString());
-                                        guess += 1;
-                                    }
-                                } else if (findByText('button', 'Continue')) {
-                                    clearInterval(imei_guess);
+                    if (new_imei_field) {
+                        setField(imei_field, 'input', '0');
+                        var guess = 1;
+                        var imei_guess = setInterval(function() {
+                            if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) { // checks to see if text invalid is there or not
+                                if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') { // Checks to see if the Imei is valid or not
+                                    setField(imei_field, 'input', guess.toString());
+                                    guess += 1;
                                 }
-                            }, 500);
+                            } else if (findByText('button', 'Continue')) {
+                                clearInterval(imei_guess);
+                            }
+                        }, 500);
+                    } else {
+                        if (imei_field.value.length != 15) { // checking if the imie field is already filled
+                            if (imei.length == 15) { // Checking to see if the imei on lead is the full imei
+                                setField(imei_field, 'input', imei);
+                            } else {
+                                setField(imei_field, 'input', imei + '0');
+                                var guess = 1;
+                                var imei_guess = setInterval(function () { // We start guessing what the last digit is
+                                    if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) { // checks to see if text invalid is there or not
+                                        if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') { // Checks to see if the Imei is valid or not
+                                            setField(imei_field, 'input', imei + guess.toString());
+                                            guess += 1;
+                                        }
+                                    } else if (findByText('button', 'Continue')) {
+                                        clearInterval(imei_guess);
+                                    }
+                                }, 500);
+                            }
                         }
                     }
                 }
