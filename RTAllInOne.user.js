@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.5
+// @version      1.3.6
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -271,7 +271,7 @@ function updateLeadTable() {
     }
     var strongs = findAllByText('strong', 'Label');
     if (strongs.length > 1) {
-        window.localStorage['parts_amount'] = 2;
+        window.localStorage['parts-amount'] = 2;
         window.localStorage['part-serial2'] = strongs[1].parentElement.innerText.substring(7);
     } else {
         window.localStorage['parts_amount'] = 1;
@@ -387,18 +387,22 @@ function selectDevicePage() {
                 if (checkExist('div.selected')) { // Double check to make sure device has been selected
                     Waiter.clearTable(table_number); // Stop the interval
                     if (new_imei_field) {
-                        setField(imei_field, 'input', '0');
-                        var guess = 1;
+                        var guess = 0;
                         var imei_guess = setInterval(function() {
-                            if (findByAttribute('div', 'ng-if', 'isImeiInvalid()')) { // checks to see if text invalid is there or not
-                                if (findByAttribute('div', 'ng-if', 'isImeiInvalid()').textContent == 'Invalid') { // Checks to see if the Imei is valid or not
-                                    setField(imei_field, 'input', guess.toString());
-                                    guess += 1;
+                            if (findByText('button', 'Continue')) {
+                                if (findByText('button', 'Continue').disabled) {
+                                    if (imei.length == 15) {
+                                        setField(imei_field, 'input', imei.charAt(14).toString());
+                                        clearInterval(imei_guess);
+                                    } else {
+                                        setField(imei_field, 'input', guess.toString());
+                                        guess += 1;
+                                    }
+                                } else if (!findByText('button', 'Continue').disabled) {
+                                    clearInterval(imei_guess);
                                 }
-                            } else if (findByText('button', 'Continue')) {
-                                clearInterval(imei_guess);
                             }
-                        }, 500);
+                        }, 30000);
                     } else {
                         if (imei_field.value.length != 15) { // checking if the imie field is already filled
                             if (imei.length == 15) { // Checking to see if the imei on lead is the full imei
@@ -458,23 +462,25 @@ function createWorkOrderPage() {
         if (!checkURL('https://portal.ubif.net/pos/device-repair-select/')) {
             Waiter.clearSingle('samsung-warranty');
         }
-    })
+    });
     Waiter.addTable(function (table_number) {
         console.log('Table Number:', table_number);
         if (!findByText('button', 'Create Work Order')) {
             // Might be samsung lets check
             // It's a samsung
-            if (findByText('div', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
-                findByText('div', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
+            if (findByText('div.repair-info-title', 'Cracked Screen')) { // A samsung repair checks for cracked screen option
+                findByText('div.repair-info-title', 'Cracked Screen').click(); // Samsung repair saying it's a cracked screen.
             }
-            if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
-                find('div.warranty-reason > select').value = "number:1"; // Set reason as Impact Damage
-                runAngularTrigger('div.warranty-reason > select', 'change');
-            }
-            checkButtonClick(table_number, 'Out Of Warranty');
         } else {
             // Not a samsung
             checkButtonClick(table_number, 'Create Work Order');
+        }
+    });
+    Waiter.addTable(function (table_number) {
+        if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
+            find('div.warranty-reason > select').value = "number:1"; // Set reason as Impact Damage
+            runAngularTrigger('div.warranty-reason > select', 'change');
+            checkButtonClick(table_number, 'Out Of Warranty');
         }
     });
     Waiter.addTable(function (table_number) {
@@ -502,7 +508,7 @@ function createWorkOrderPage() {
         if (findByText('button', 'Out Of Warranty')) {
             if (findByText('button', 'Out Of Warranty').disabled) {
                 if (checkExist('div.warranty-reason > select')) { // Checks to see if the out of warranty drop down is available
-                    find('div.warranty-reason > select').value = 0; // Set reason as Impact Damage
+                    find('div.warranty-reason > select').value = "number:1"; // Set reason as Impact Damage
                     runAngularTrigger('div.warranty-reason > select', 'change');
                     Waiter.clearTable(table_number);
                 }
