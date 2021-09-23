@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.6
+// @version      1.3.7
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -258,7 +258,7 @@ function updateLeadTable() {
         // find('#sku-data').innerText = sku;
         item_text_number = sku + ' -';
     }
-    var device_name = findSibling('label', 'div.details', 'Device').textContent;
+    var device_name = findSibling('label', 'div.details', 'Model').textContent;
     var item = findByAttribute('td', 'ng-click', 'editSaleItem(saleItem, true)', '', '', find('#old-table'));
     if (item != null) {
         item = item.innerText;
@@ -388,21 +388,20 @@ function selectDevicePage() {
                     Waiter.clearTable(table_number); // Stop the interval
                     if (new_imei_field) {
                         var guess = 0;
-                        var imei_guess = setInterval(function() {
-                            if (findByText('button', 'Continue')) {
-                                if (findByText('button', 'Continue').disabled) {
-                                    if (imei.length == 15) {
-                                        setField(imei_field, 'input', imei.charAt(14).toString());
-                                        clearInterval(imei_guess);
-                                    } else {
+                        if (imei.length == 15) {
+                            setField(imei_field, 'input', imei.charAt(14).toString());
+                        } else {
+                            var imei_guess = setInterval(function() {
+                                if (findByText('button', 'Continue')) {
+                                    if (findByText('button', 'Continue').disabled) {
                                         setField(imei_field, 'input', guess.toString());
                                         guess += 1;
+                                    } else if (!findByText('button', 'Continue').disabled) {
+                                        clearInterval(imei_guess);
                                     }
-                                } else if (!findByText('button', 'Continue').disabled) {
-                                    clearInterval(imei_guess);
                                 }
-                            }
-                        }, 30000);
+                            }, 20000);
+                        }
                     } else {
                         if (imei_field.value.length != 15) { // checking if the imie field is already filled
                             if (imei.length == 15) { // Checking to see if the imei on lead is the full imei
