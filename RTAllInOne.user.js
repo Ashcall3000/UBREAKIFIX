@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.7
+// @version      1.3.8
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -258,7 +258,7 @@ function updateLeadTable() {
         // find('#sku-data').innerText = sku;
         item_text_number = sku + ' -';
     }
-    var device_name = findSibling('label', 'div.details', 'Model').textContent;
+    var device_name = findSibling('label', 'div.details', 'Device').textContent;
     var item = findByAttribute('td', 'ng-click', 'editSaleItem(saleItem, true)', '', '', find('#old-table'));
     if (item != null) {
         item = item.innerText;
@@ -646,7 +646,7 @@ function iPhoneCloseTicket() {
         }
     });
     Waiter.addTable(function (table_number) {
-        if (checkExist('span.bg-quality-inspection')) {
+        if (checkExist('span.bg-quality-inspection') && checkExist('div.note-editable')) {
             createNote('Repaired - RFP', 'RCM', 1000);
             Waiter.clearTable(table_number);
         }
@@ -709,7 +709,7 @@ function samsungCloseTicket() {
         }
     });
     Waiter.addTable(function (table_number) {
-        if (checkExist('span.bg-quality-inspection')) {
+        if (checkExist('span.bg-quality-inspection') && checkExist('div.note-editable')) {
             if (!checkExist('#paneled-side-bar.closed')) {
                 if (findByAttribute('select', 'ng-model', 'selectedOptions.gspn_defect_code_id')) {
                     var selector_0 = findByAttribute('select', 'ng-model', 'selectedOptions.gspn_wty_exception_id');
