@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RT All In One
 // @namespace    http://tampermonkey.net/
-// @version      1.3.8
+// @version      1.3.9
 // @description  Makes the UBIF RT experience more automated so that you can spend more time doing the repair and less on the paperwork.
 // @author       Christopher Sullivan
 // @include      https://portal.ubif.net/*
@@ -134,6 +134,9 @@ var samsung_list = [
     'Samsung Galaxy A70',
     'Samsung Galaxy A51',
     'Samsung Galaxy A50',
+    'Samsung Galaxy A42',
+    'Samsung Galaxy A41',
+    'Samsung Galaxy A40',
     'Samsung Galaxy A21',
     'Samsung Galaxy A20',
     'Samsung Galaxy A11',
@@ -635,7 +638,7 @@ function iPhoneCloseTicket() {
     }
     createNote('Quality Inspection', 'Device is repaired and is going through testing.');
     console.log('Setting Work Order to Quality Inspection');
-    Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
+    //Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
     Waiter.addCheckButtonTable('Test Complete');
     Waiter.addCheckButtonTable('Done');
     Waiter.addTable(function (table_number) {
@@ -680,7 +683,7 @@ function samsungCloseTicket() {
         Waiter.clearAllTables();
     }
     createNote('Quality Inspection', 'Device is reapired and going through testing.');
-    Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
+    //Waiter.addCheckButtonTable('Add', 'button.btn-confirm');
     Waiter.addCheckButtonTable('Test Complete');
     Waiter.addCheckButtonTable('Done');
     Waiter.addTable(function (table_number) {
